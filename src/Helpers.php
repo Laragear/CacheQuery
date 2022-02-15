@@ -47,7 +47,7 @@ class Helpers
      * @return string
      */
     public static function cacheKey(Builder $builder, string $key): string
-    {\dump(static::hashBuilder($builder));
+    {
         return str(config('cache-query.prefix'))
             ->finish('|')
             ->append($key ?: static::hashBuilder($builder));
