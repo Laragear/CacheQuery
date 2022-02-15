@@ -1,24 +1,21 @@
 {
     "name": "laragear/query-cache",
-    "description": "description",
-    "keywords": [
-        "laravel",
-        "database",
-        "query",
-        "cache"
-    ],
-    "homepage": "https://github.com/laragear/query-cache",
+    "description": "Remember your query results using only one method. Yes, only one.",
+    "type": "library",
+    "license": "propietary",
     "minimum-stability": "stable",
     "prefer-stable": true,
-    "license": "proprietary",
-    "type": "library",
     "authors": [
         {
-            "name": "Italo Israel Baeza Cabrera",
-            "email": "darkghosthunter@gmail.com",
+            "name": "Italo Baeza C.",
+            "email": "DarkGhostHunter@Gmail.com",
             "homepage": "https://patreon.com/packagesforlaravel"
         }
     ],
+    "support": {
+        "source": "https://github.com/laragear/query-cache",
+        "issues": "https://github.com/laragear/query-cache/issues"
+    },
     "require": {
         "php": "^8.0.2",
         "illuminate/cache": "9.*",
@@ -45,7 +42,6 @@
     "scripts": {
         "test": "vendor/bin/phpunit --coverage-clover build/logs/clover.xml",
         "test-coverage": "vendor/bin/phpunit --coverage-html coverage"
-
     },
     "config": {
         "sort-packages": true
