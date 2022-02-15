@@ -136,7 +136,7 @@ class CacheAwareProxyTest extends TestCase
 
         $notNull = $this->app->make('db')->table('users')->cache()->where('id', 11)->first();
 
-        static::assertSame(11, $notNull->id);
+        static::assertEquals('11', $notNull->id);
     }
 
     public function test_cached_eloquent_query_stores_empty_results(): void
