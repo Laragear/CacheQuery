@@ -159,6 +159,16 @@ User::with('posts', function ($posts) use ($page) {
 })->find(1);
 ```
 
+## PhpStorm stubs
+
+For users of PhpStorm, there is a stub file and a meta file to aid in macro autocompletion for this package. You can publish them using the `phpstorm` tag:
+
+```shell
+php artisan vendor:publish --provider="Laragear\CacheQuery\CacheQueryServiceProvider" --tag="phpstorm"
+```
+
+The file gets published into the `.stubs` folder of your project, while the meta is located inside .phpstorm.meta.php directory. You should point your [PhpStorm to these stubs](https://www.jetbrains.com/help/phpstorm/php.html#advanced-settings-area).
+
 ## How it works?
 
 When you use `cache()`, it will wrap the base builder into a `CacheAwareProxy` proxy calls to it. At the same time, it injects a callback that runs _before_ is sent to the database for execution.
