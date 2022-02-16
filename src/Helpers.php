@@ -2,14 +2,14 @@
 
 namespace Laragear\CacheQuery;
 
-use Illuminate\Contracts\Cache\LockProvider;
-use Illuminate\Contracts\Cache\Repository;
-use Illuminate\Contracts\Database\Query\Builder;
-use LogicException;
 use function base64_encode;
 use function cache;
 use function config;
+use Illuminate\Contracts\Cache\LockProvider;
+use Illuminate\Contracts\Cache\Repository;
+use Illuminate\Contracts\Database\Query\Builder;
 use function implode;
+use LogicException;
 use function md5;
 use function str;
 
@@ -30,7 +30,7 @@ class Helpers
     {
         $repository = cache()->store($store ?? config('cache-query.store'));
 
-        if ($lockable && !$repository->getStore() instanceof LockProvider) {
+        if ($lockable && ! $repository->getStore() instanceof LockProvider) {
             $store ??= cache()->getDefaultDriver();
 
             throw new LogicException("The [$store] cache does not support atomic locks.");
