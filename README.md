@@ -6,6 +6,12 @@ Remember your query results using only one method. Yes, only one.
 Articles::latest('published_at')->cache()->take(10)->get();
 ```
 
+## Keep this package free
+
+[![](.assets/patreon.png)](https://patreon.com/packagesforlaravel)[![](.assets/ko-fi.png)](https://ko-fi.com/DarkGhostHunter)[![](.assets/buymeacoffee.png)](https://www.buymeacoffee.com/darkghosthunter)[![](.assets/paypal.png)](https://www.paypal.com/paypalme/darkghosthunter)
+
+Your support allows me to keep this package free, up-to-date and maintainable. Alternatively, you can **[spread the word!](http://twitter.com/share?text=I%20am%20using%20this%20cool%20PHP%20package&url=https://github.com%2FLaragear%2FCacheQuery&hashtags=PHP,Laravel)**
+
 ## Requirements
 
 * PHP 8.0
@@ -132,7 +138,7 @@ User::query()->cache(60, 'find_joe')->whereAge(20)->whereName('Joe')->first();
 
 ### Eager load **unaware**
 
-Since caching only works for the current query builder instance, an underlying Eager Load query won't be cached.
+Since caching only works for the current query builder instance, an underlying Eager Load query won't be cached. This may be a blessing or a curse depending on your scenario.
 
 ```php
 $page = 1;
@@ -156,10 +162,16 @@ User::with('posts', function ($posts) use ($page) {
 
 When you use `cache()`, it will wrap the base builder into a `CacheAwareProxy` proxy calls to it. At the same time, it injects a callback that runs _before_ is sent to the database for execution.
 
-This callback checks if the results are in the cache. On cache hit, it throws an exception to interrupt the query, which is recovered by the `CacheAwareProxy`, returning the results.
+This callback will check if the results are in the cache. On cache hit, it throws an exception to interrupt the query, which is recovered by the `CacheAwareProxy`, returning the results.
 
 For the Eloquent Builder, this wraps happens below it, so all calls pass through the `CacheAwareProxy` before hitting the real base builder.
 
 ## Security
 
 If you discover any security related issues, please email darkghosthunter@gmail.com instead of using the issue tracker.
+
+# License
+
+This specific package version is licensed under the terms of the [MIT License](LICENSE.md), at time of publishing.
+
+[Laravel](https://laravel.com) is a Trademark of [Taylor Otwell](https://github.com/TaylorOtwell/). Copyright © 2011-2022 Laravel LLC.
