@@ -26,7 +26,7 @@ class CacheAwareProxyTest extends TestCase
     {
         parent::setUp();
 
-        for ($i = 0; $i < 10; ++$i) {
+        for ($i = 0; $i < 10; $i++) {
             $users[] = [
                 'email' => $this->faker->freeEmail,
                 'name' => $this->faker->name,
@@ -37,7 +37,7 @@ class CacheAwareProxyTest extends TestCase
 
         $this->app->make('db')->table('users')->insert($users);
 
-        for ($i = 0; $i < 6; ++$i) {
+        for ($i = 0; $i < 6; $i++) {
             $posts[] = [
                 'title' => $this->faker->text(20),
                 'user_id' => (int) floor(max(1, $i / 2)),

@@ -40,8 +40,7 @@ class CacheAwareProxy implements Builder
         protected bool $executingCallback = false,
         protected ?Lock $lockInstance = null,
         protected bool $bypassCacheCheck = false,
-    )
-    {
+    ) {
         // This callback interrupts the query execution on cache hit.
         $this->queryBuilder->beforeQuery(function (): void {
             // We will avoid looping this callback if it's executing.

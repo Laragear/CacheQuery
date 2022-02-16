@@ -5,10 +5,10 @@ namespace Laragear\CacheQuery;
 use Closure;
 use DateInterval;
 use DateTimeInterface;
+use function func_get_args;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\ServiceProvider;
-use function func_get_args;
 
 /**
  * @internal
@@ -35,11 +35,11 @@ class CacheQueryServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        if (!Builder::hasMacro('cache')) {
+        if (! Builder::hasMacro('cache')) {
             Builder::macro('cache', $this->macro());
         }
 
-        if (!EloquentBuilder::hasGlobalMacro('cache')) {
+        if (! EloquentBuilder::hasGlobalMacro('cache')) {
             EloquentBuilder::macro('cache', function () {
                 /** @var \Illuminate\Contracts\Database\Eloquent\Builder $this */
                 $this->setQuery($this->getQuery()->cache(...func_get_args()));
