@@ -166,6 +166,15 @@ This callback will check if the results are in the cache. On cache hit, it throw
 
 For the Eloquent Builder, this wraps happens below it, so all calls pass through the `CacheAwareProxy` before hitting the real base builder.
 
+## Laravel Octane compatibility
+
+- There are no singletons using a stale application instance.
+- There are no singletons using a stale config instance.
+- There are no singletons using a stale request instance.
+- There are no static properties written during a request.
+
+There should be no problems using this package with Laravel Octane.
+
 ## Security
 
 If you discover any security related issues, please email darkghosthunter@gmail.com instead of using the issue tracker.
