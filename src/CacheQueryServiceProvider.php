@@ -40,12 +40,7 @@ class CacheQueryServiceProvider extends ServiceProvider
         }
 
         if (! EloquentBuilder::hasGlobalMacro('cache')) {
-            EloquentBuilder::macro('cache', function () {
-                /** @var \Illuminate\Contracts\Database\Eloquent\Builder $this */
-                $this->setQuery($this->getQuery()->cache(...func_get_args()));
-
-                return $this;
-            });
+            EloquentBuilder::macro('cache', $this->eloquentMacro());
         }
 
         if ($this->app->runningInConsole()) {
@@ -71,8 +66,28 @@ class CacheQueryServiceProvider extends ServiceProvider
             string $store = null,
             int $wait = 0,
         ): CacheAwareProxy {
-            /** @var \Illuminate\Contracts\Database\Query\Builder $this */
+            /** @var \Illuminate\Database\Query\Builder $this */
             return new CacheAwareProxy($this, Helpers::store($store, (bool) $wait), $key, $ttl, $wait);
+        };
+    }
+
+    /**
+     * Creates a macro for the Eloquent Query Builder.
+     *
+     * @return \Closure
+     */
+    protected function eloquentMacro(): Closure
+    {
+        return function (
+            int|DateTimeInterface|DateInterval $ttl = 60,
+            string $key = '',
+            string $store = null,
+            int $wait = 0,
+        ): EloquentBuilder {
+            /** @var \Illuminate\Database\Eloquent\Builder $this */
+            $this->setQuery($this->getQuery()->cache(...func_get_args()));
+
+            return $this;
         };
     }
 }
