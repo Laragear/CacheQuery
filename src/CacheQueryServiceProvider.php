@@ -5,10 +5,10 @@ namespace Laragear\CacheQuery;
 use Closure;
 use DateInterval;
 use DateTimeInterface;
+use function func_get_args;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\ServiceProvider;
-use function func_get_args;
 
 /**
  * @internal
@@ -48,7 +48,7 @@ class CacheQueryServiceProvider extends ServiceProvider
             $this->publishes([static::STUBS => $this->app->basePath('.stubs/cache-query.php')], 'phpstorm');
 
             $this->commands([
-                Console\Commands\CacheQuery\Forget::class
+                Console\Commands\CacheQuery\Forget::class,
             ]);
         }
     }
