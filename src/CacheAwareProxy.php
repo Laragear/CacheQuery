@@ -85,6 +85,7 @@ class CacheAwareProxy implements Builder
      * @param  string  $name
      * @param  mixed  $value
      * @return void
+     * @noinspection MagicMethodsValidityInspection
      */
     public function __set(string $name, mixed $value): void
     {
@@ -97,6 +98,7 @@ class CacheAwareProxy implements Builder
      * @param  string  $method
      * @param  array  $parameters
      * @return $this|mixed
+     * @noinspection PhpHierarchyChecksInspection
      */
     public function __call(string $method, array $parameters)
     {
