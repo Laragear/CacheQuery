@@ -2,6 +2,7 @@
 
 namespace Tests;
 
+use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\ServiceProvider;
@@ -37,5 +38,10 @@ class ServiceProviderTest extends TestCase
             [CacheQueryServiceProvider::STUBS => $this->app->basePath('.stubs/cache-query.php')],
             ServiceProvider::pathsToPublish(CacheQueryServiceProvider::class, 'phpstorm')
         );
+    }
+
+    public function test_registers_command(): void
+    {
+        static::assertArrayHasKey('cache-query:forget', $this->app->make(Kernel::class)->all());
     }
 }

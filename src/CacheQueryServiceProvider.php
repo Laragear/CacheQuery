@@ -51,6 +51,10 @@ class CacheQueryServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->publishes([static::CONFIG => $this->app->configPath('cache-query.php')], 'config');
             $this->publishes([static::STUBS => $this->app->basePath('.stubs/cache-query.php')], 'phpstorm');
+
+            $this->commands([
+                Console\Commands\CacheQuery\Forget::class
+            ]);
         }
     }
 
