@@ -124,10 +124,10 @@ For example, given two similar queries in different parts of the application, th
 
 ```php
 User::query()->cache()->whereName('Joe')->whereAge(20)->first();
-// Cache key: "query-cache|/XreUO1yaZ4BzH2W6LtBSA=="
+// Cache key: "cache-query|/XreUO1yaZ4BzH2W6LtBSA=="
 
 User::query()->cache()->whereAge(20)->whereName('Joe')->first();
-// Cache key: "query-cache|muDJevbVppCsTFcdeZBxsA=="
+// Cache key: "cache-query|muDJevbVppCsTFcdeZBxsA=="
 ```
 
 To ensure you're hitting the same cache on similar queries, use a [custom cache key](#custom-cache-key). With this, all queries using the same key will share the same cached result:
