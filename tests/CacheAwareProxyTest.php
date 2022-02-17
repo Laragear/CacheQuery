@@ -426,6 +426,22 @@ class CacheAwareProxyTest extends TestCase
 
         static::assertSame($value, $builder->bindings);
     }
+
+    public function test_exception_if_wrapping_the_cached_query_builder_twice(): void
+    {
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('This builder instance is already wrapped into a cache proxy.');
+
+        $this->app->make('db')->table('users')->cache()->cache();
+    }
+
+    public function test_exception_if_wrapping_the_cached_eloquent_query_builder_twice(): void
+    {
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('This builder instance is already wrapped into a cache proxy.');
+
+        User::query()->cache()->cache();
+    }
 }
 
 class User extends Authenticatable
