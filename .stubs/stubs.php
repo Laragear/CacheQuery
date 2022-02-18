@@ -9,7 +9,7 @@ namespace Illuminate\Database\Query
     class Builder
     {
         /**
-         * Caches the underlying builder results.
+         * Caches the underlying query results.
          *
          * @param  int|\DateTimeInterface|\DateInterval  $ttl
          * @param  string  $key
@@ -33,13 +33,13 @@ namespace Illuminate\Database\Eloquent
     class Builder
     {
         /**
-         * Caches the underlying builder results.
+         * Caches the underlying query results.
          *
          * @param  int|\DateTimeInterface|\DateInterval  $ttl
          * @param  string  $key
          * @param  string|null  $store
          * @param  int  $wait
-         * @return \Illuminate\Database\Query\Builder
+         * @return $this
          */
         public function cache(int|DateTimeInterface|DateInterval $ttl = 60, string $key = '', string $store = null, int $wait = 0): static
         {
