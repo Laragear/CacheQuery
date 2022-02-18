@@ -276,7 +276,7 @@ class CacheAwareConnectionProxyTest extends TestCase
         $interval = $now->diffAsCarbonInterval(now());
 
         $repository = $this->mock(Repository::class);
-        $repository->expects('has')->times(3)->andReturnFalse();
+        $repository->expects('get')->times(3)->andReturnFalse();
         $repository->allows('getStore')->never();
         $repository->expects('put')->with($hash, Mockery::type('array'), $seconds);
         $repository->expects('put')->with($hash, Mockery::type('array'), $now);
@@ -291,14 +291,13 @@ class CacheAwareConnectionProxyTest extends TestCase
 
     public function test_uses_custom_key(): void
     {
-        $store = $this->spy(Repository::class);
+        $repository = $this->mock(Repository::class);
+        $repository->expects('get')->with('cache-query|foo', false)->andReturnFalse();
+        $repository->expects('put')->with('cache-query|foo', Mockery::type('array'), 60)->andReturnTrue();
 
-        $this->mock('cache')->allows('store')->with(null)->andReturn($store);
+        $this->mock('cache')->allows('store')->with(null)->andReturn($repository);
 
         $this->app->make('db')->table('users')->cache(key: 'foo')->first();
-
-        $store->shouldHaveReceived('has')->once();
-        $store->shouldHaveReceived('put')->with('cache-query|foo', Mockery::type('array'), 60);
     }
 
     public function test_exception_if_repository_store_is_not_lockable_when_waiting(): void
@@ -328,15 +327,14 @@ class CacheAwareConnectionProxyTest extends TestCase
             $callback();
 
             return true;
-        })->andReturn([false, []]);
+        })->andReturnFalse();
 
         $store = $this->mock(LockProvider::class);
         $store->expects('lock')->with($hash, 30)->andReturn($lock);
 
         $repository = $this->mock(Repository::class);
         $repository->expects('getStore')->withNoArgs()->twice()->andReturn($store);
-        $repository->expects('has')->andReturnFalse();
-        $repository->expects('get')->never();
+        $repository->expects('get')->with($hash, false)->andReturnFalse();
         $repository->expects('put')->with($hash, Mockery::type('array'), 60);
 
         $this->mock('cache')->shouldReceive('store')->with(null)->andReturn($repository);

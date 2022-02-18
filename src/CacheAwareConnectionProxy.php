@@ -9,7 +9,6 @@ use Illuminate\Contracts\Cache\Lock;
 use Illuminate\Contracts\Cache\LockProvider;
 use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Database\ConnectionInterface;
-use JetBrains\PhpStorm\ArrayShape;
 use LogicException;
 use function array_shift;
 use function base64_encode;
@@ -51,9 +50,9 @@ class CacheAwareConnectionProxy
     {
         $key = config('cache-query.prefix').'|'.($this->queryKey ?: $this->getQueryHash($query, $bindings));
 
-        [$cached, $results] = $this->checkForCachedResult($key);
+        $results = $this->checkForCachedResult($key);
 
-        if ($cached) {
+        if ($results !== false) {
             return $results;
         }
 
@@ -83,15 +82,12 @@ class CacheAwareConnectionProxy
      * Checks if the result exists in the cache, and returns in.
      *
      * @param  string  $key
-     * @return array
+     * @return mixed
      */
-    #[ArrayShape([0 => 'boolean', 1 => 'mixed'])]
-    protected function checkForCachedResult(string $key): array
+    protected function checkForCachedResult(string $key): mixed
     {
         return $this->retrieveLock($key)->block($this->lockWait, function () use ($key) {
-            $has = $this->repository->has($key);
-
-            return [$has, $has ? $this->repository->get($key) : []];
+            return $this->repository->get($key, false);
         });
     }
 
