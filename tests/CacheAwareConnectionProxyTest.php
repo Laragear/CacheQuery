@@ -328,7 +328,7 @@ class CacheAwareConnectionProxyTest extends TestCase
             $callback();
 
             return true;
-        })->once();
+        })->andReturn([false, []]);
 
         $store = $this->mock(LockProvider::class);
         $store->expects('lock')->with($hash, 30)->andReturn($lock);
@@ -336,6 +336,7 @@ class CacheAwareConnectionProxyTest extends TestCase
         $repository = $this->mock(Repository::class);
         $repository->expects('getStore')->withNoArgs()->twice()->andReturn($store);
         $repository->expects('has')->andReturnFalse();
+        $repository->expects('get')->never();
         $repository->expects('put')->with($hash, Mockery::type('array'), 60);
 
         $this->mock('cache')->shouldReceive('store')->with(null)->andReturn($repository);
