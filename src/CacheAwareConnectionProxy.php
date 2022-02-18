@@ -2,10 +2,6 @@
 
 namespace Laragear\CacheQuery;
 
-use function array_shift;
-use function base64_encode;
-use function cache;
-use function config;
 use DateInterval;
 use DateTimeInterface;
 use Illuminate\Cache\NoLock;
@@ -13,8 +9,12 @@ use Illuminate\Contracts\Cache\Lock;
 use Illuminate\Contracts\Cache\LockProvider;
 use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Database\ConnectionInterface;
-use function implode;
 use LogicException;
+use function array_shift;
+use function base64_encode;
+use function cache;
+use function config;
+use function implode;
 use function md5;
 
 class CacheAwareConnectionProxy
@@ -48,7 +48,7 @@ class CacheAwareConnectionProxy
      * @param  bool  $useReadPdo
      * @return array
      */
-    public function select($query, $bindings = [], $useReadPdo = true): mixed
+    public function select($query, $bindings = [], $useReadPdo = true)
     {
         $key = $this->cachePrefix.'|'.($this->queryKey ?: $this->getQueryHash($query, $bindings));
 
