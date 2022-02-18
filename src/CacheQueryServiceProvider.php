@@ -47,7 +47,7 @@ class CacheQueryServiceProvider extends ServiceProvider
             $this->publishes([static::STUBS => $this->app->basePath('.stubs/cache-query.php')], 'phpstorm');
 
             $this->commands([
-                Console\Commands\CacheQuery\Forget::class
+                Console\Commands\CacheQuery\Forget::class,
             ]);
         }
     }

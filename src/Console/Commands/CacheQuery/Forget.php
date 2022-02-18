@@ -64,7 +64,7 @@ class Forget extends Command
     {
         return [
             $this->argument('key'),
-            (string) str($config->get('cache-query.prefix'))->finish('|')->append($this->argument('key'))
+            (string) str($config->get('cache-query.prefix'))->finish('|')->append($this->argument('key')),
         ];
     }
 }
