@@ -2,6 +2,10 @@
 
 namespace Laragear\CacheQuery;
 
+use function array_shift;
+use function base64_encode;
+use function cache;
+use function config;
 use DateInterval;
 use DateTimeInterface;
 use Illuminate\Cache\NoLock;
@@ -9,12 +13,8 @@ use Illuminate\Contracts\Cache\Lock;
 use Illuminate\Contracts\Cache\LockProvider;
 use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Database\ConnectionInterface;
-use LogicException;
-use function array_shift;
-use function base64_encode;
-use function cache;
-use function config;
 use function implode;
+use LogicException;
 use function md5;
 
 class CacheAwareConnectionProxy
