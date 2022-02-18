@@ -9,6 +9,7 @@ use Illuminate\Contracts\Cache\Lock;
 use Illuminate\Contracts\Cache\LockProvider;
 use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Database\ConnectionInterface;
+use JetBrains\PhpStorm\ArrayShape;
 use LogicException;
 use function array_shift;
 use function base64_encode;
@@ -24,7 +25,6 @@ class CacheAwareConnectionProxy
      *
      * @param  \Illuminate\Database\ConnectionInterface  $connection
      * @param  \Illuminate\Contracts\Cache\Repository  $repository
-     * @param  string  $cachePrefix
      * @param  string  $queryKey
      * @param  \DateTimeInterface|\DateInterval|int  $ttl
      * @param  int  $lockWait
@@ -32,7 +32,6 @@ class CacheAwareConnectionProxy
     public function __construct(
         public ConnectionInterface $connection,
         protected Repository $repository,
-        protected string $cachePrefix,
         protected string $queryKey,
         protected DateTimeInterface|DateInterval|int $ttl,
         protected int $lockWait,
@@ -50,7 +49,7 @@ class CacheAwareConnectionProxy
      */
     public function select($query, $bindings = [], $useReadPdo = true)
     {
-        $key = $this->cachePrefix.'|'.($this->queryKey ?: $this->getQueryHash($query, $bindings));
+        $key = config('cache-query.prefix').'|'.($this->queryKey ?: $this->getQueryHash($query, $bindings));
 
         [$cached, $results] = $this->checkForCachedResult($key);
 
@@ -84,14 +83,15 @@ class CacheAwareConnectionProxy
      * Checks if the result exists in the cache, and returns in.
      *
      * @param  string  $key
-     * @return mixed
+     * @return array
      */
-    protected function checkForCachedResult(string $key): mixed
+    #[ArrayShape([0 => 'boolean', 1 => 'mixed'])]
+    protected function checkForCachedResult(string $key): array
     {
         return $this->retrieveLock($key)->block($this->lockWait, function () use ($key) {
             $has = $this->repository->has($key);
 
-            return [$has, $has ? $this->repository->get($key) : null];
+            return [$has, $has ? $this->repository->get($key) : []];
         });
     }
 
@@ -177,7 +177,7 @@ class CacheAwareConnectionProxy
     ): static {
         $repository = static::store($store, (bool) $lockWait);
 
-        return new static($connection, $repository, config('cache-query.prefix'), $key, $ttl, $lockWait);
+        return new static($connection, $repository, $key, $ttl, $lockWait);
     }
 
     /**
