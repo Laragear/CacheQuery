@@ -3,7 +3,6 @@
 namespace Tests;
 
 use Illuminate\Contracts\Console\Kernel;
-use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\ServiceProvider;
 use Laragear\CacheQuery\CacheQueryServiceProvider;
@@ -18,10 +17,9 @@ class ServiceProviderTest extends TestCase
         );
     }
 
-    public function test_registers_macros(): void
+    public function test_registers_macro(): void
     {
         static::assertTrue(Builder::hasMacro('cache'));
-        static::assertTrue(EloquentBuilder::hasGlobalMacro('cache'));
     }
 
     public function test_publishes_config(): void

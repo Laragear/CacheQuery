@@ -5,7 +5,6 @@ namespace Laragear\CacheQuery;
 use Closure;
 use DateInterval;
 use DateTimeInterface;
-use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\ServiceProvider;
 
@@ -38,10 +37,6 @@ class CacheQueryServiceProvider extends ServiceProvider
             Builder::macro('cache', $this->macro());
         }
 
-        if (! EloquentBuilder::hasGlobalMacro('cache')) {
-            EloquentBuilder::macro('cache', $this->eloquentMacro());
-        }
-
         if ($this->app->runningInConsole()) {
             $this->publishes([static::CONFIG => $this->app->configPath('cache-query.php')], 'config');
             $this->publishes([static::STUBS => $this->app->basePath('.stubs/cache-query.php')], 'phpstorm');
@@ -71,26 +66,6 @@ class CacheQueryServiceProvider extends ServiceProvider
             }
 
             $this->connection = CacheAwareConnectionProxy::crateNewInstance($this->connection, $ttl, $key, $wait, $store);
-
-            return $this;
-        };
-    }
-
-    /**
-     * Creates a macro for the Eloquent Query Builder.
-     *
-     * @return \Closure
-     */
-    protected function eloquentMacro(): Closure
-    {
-        return function (
-            int|DateTimeInterface|DateInterval $ttl = 60,
-            string $key = '',
-            string $store = null,
-            int $wait = 0,
-        ): EloquentBuilder {
-            /** @var \Illuminate\Database\Eloquent\Builder $this */
-            $this->getQuery()->cache($ttl, $key, $store, $wait);
 
             return $this;
         };
