@@ -2,6 +2,10 @@
 
 namespace Laragear\CacheQuery;
 
+use function array_shift;
+use function base64_encode;
+use function cache;
+use function config;
 use DateInterval;
 use DateTimeInterface;
 use Illuminate\Cache\NoLock;
@@ -9,12 +13,8 @@ use Illuminate\Contracts\Cache\Lock;
 use Illuminate\Contracts\Cache\LockProvider;
 use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Database\ConnectionInterface;
-use LogicException;
-use function array_shift;
-use function base64_encode;
-use function cache;
-use function config;
 use function implode;
+use LogicException;
 use function md5;
 
 class CacheAwareConnectionProxy
@@ -115,7 +115,7 @@ class CacheAwareConnectionProxy
      */
     protected function retrieveLock(string $key): Lock
     {
-        if (!$this->lockWait) {
+        if (! $this->lockWait) {
             return new NoLock($key, $this->lockWait);
         }
 
@@ -191,7 +191,7 @@ class CacheAwareConnectionProxy
     {
         $repository = cache()->store($store ?? config('cache-query.store'));
 
-        if ($lockable && !$repository->getStore() instanceof LockProvider) {
+        if ($lockable && ! $repository->getStore() instanceof LockProvider) {
             $store ??= cache()->getDefaultDriver();
 
             throw new LogicException("The [$store] cache does not support atomic locks.");
