@@ -362,7 +362,7 @@ class CacheAwareConnectionProxyTest extends TestCase
         })->whereKey(1)->first();
 
         User::query()->whereKey(1)->delete();
-        Post::query()->whereKey(1)->delete();
+        Post::query()->whereKey(2)->delete();
 
         $renewed = User::query()->cache()->with('posts', function ($posts) {
             $posts->cache()->whereKey(2);
