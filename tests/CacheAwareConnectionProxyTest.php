@@ -2,6 +2,7 @@
 
 namespace Tests;
 
+use Closure;
 use Illuminate\Contracts\Cache\Lock;
 use Illuminate\Contracts\Cache\LockProvider;
 use Illuminate\Contracts\Cache\Repository;
@@ -12,12 +13,14 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
+use Laragear\CacheQuery\CacheAwareConnectionProxy;
 use LogicException;
 use Mockery;
 use function now;
 use function today;
 
-class CacheAwareProxyTest extends TestCase
+class CacheAwareConnectionProxyTest extends TestCase
 {
     use RefreshDatabase;
     use WithFaker;
@@ -69,16 +72,21 @@ class CacheAwareProxyTest extends TestCase
 
     public function test_caches_base_query_into_default_store(): void
     {
-        $first = $this->app->make('db')->table('users')->cache()->where('id', 1)->first();
+        $get = $this->app->make('db')->table('users')->cache()->where('id', 1)->get();
 
-        static::assertEquals($first, $this->app->make('cache')->store()->get('cache-query|HWoFXj1IBxFwWvoug8PGxQ=='));
+        static::assertInstanceOf(Collection::class, $get);
+        static::assertCount(1, $get);
+
+        $cached = $this->app->make('cache')->store()->get('cache-query|X/UPpOGQDQSgAtjm14OWzw==');
+
+        static::assertEquals(Collection::make($cached), $get);
     }
 
     public function test_caches_eloquent_query_into_default_store(): void
     {
         $first = User::query()->cache()->where('id', 1)->first();
 
-        static::assertNotNull($this->app->make('cache')->store()->get('cache-query|HWoFXj1IBxFwWvoug8PGxQ=='));
+        static::assertNotNull($this->app->make('cache')->store()->get('cache-query|fj8Xyz4K1Zh0tdAamPbG1A=='));
 
         User::query()->whereKey(1)->delete();
 
@@ -112,13 +120,14 @@ class CacheAwareProxyTest extends TestCase
 
     public function test_cached_base_query_stores_null(): void
     {
-        $hash = 'cache-query|k7FVGieZVUzWvOK44zPFeg==';
+        $hash = 'cache-query|6SHtUJfPv2GbKc4ikp7cLQ==';
 
         $null = $this->app->make('db')->table('users')->cache()->where('id', 11)->first();
 
         static::assertNull($null);
-        static::assertNull($this->app->make('cache')->store()->get($hash));
-        static::assertFalse($this->app->make('cache')->store()->has($hash));
+        static::assertIsArray($this->app->make('cache')->store()->get($hash));
+        static::assertEmpty($this->app->make('cache')->store()->get($hash));
+        static::assertTrue($this->app->make('cache')->store()->has($hash));
     }
 
     public function test_cached_base_query_doesnt_intercepts_cached_null_values(): void
@@ -141,7 +150,7 @@ class CacheAwareProxyTest extends TestCase
 
     public function test_cached_eloquent_query_stores_empty_results(): void
     {
-        $hash = 'cache-query|k7FVGieZVUzWvOK44zPFeg==';
+        $hash = 'cache-query|6SHtUJfPv2GbKc4ikp7cLQ==';
 
         $null = User::query()->cache()->where('id', 11)->first();
 
@@ -260,23 +269,24 @@ class CacheAwareProxyTest extends TestCase
 
     public function test_uses_custom_time_to_live(): void
     {
-        $hash = 'cache-query|695ux5/BjDB7/0BzMvbo+w==';
+        $hash = 'cache-query|30250dGAv64n2ySOIxuL+g==';
 
+        $seconds = 120;
         $now = now()->addMinute();
         $interval = $now->diffAsCarbonInterval(now());
 
-        $store = $this->spy(Repository::class);
+        $repository = $this->mock(Repository::class);
+        $repository->expects('has')->times(3)->andReturnFalse();
+        $repository->allows('getStore')->never();
+        $repository->expects('put')->with($hash, Mockery::type('array'), $seconds);
+        $repository->expects('put')->with($hash, Mockery::type('array'), $now);
+        $repository->expects('put')->with($hash, Mockery::type('array'), $interval);
 
-        $this->mock('cache')->allows('store')->with(null)->andReturn($store);
+        $this->mock('cache')->allows('store')->with(null)->andReturn($repository);
 
-        $this->app->make('db')->table('users')->cache(120)->first();
+        $this->app->make('db')->table('users')->cache($seconds)->first();
         $this->app->make('db')->table('users')->cache($now)->first();
         $this->app->make('db')->table('users')->cache($interval)->first();
-
-        $store->shouldHaveReceived('has')->times(3);
-        $store->shouldHaveReceived('put')->with($hash, Mockery::type('object'), 120);
-        $store->shouldHaveReceived('put')->with($hash, Mockery::type('object'), $now);
-        $store->shouldHaveReceived('put')->with($hash, Mockery::type('object'), $interval);
     }
 
     public function test_uses_custom_key(): void
@@ -288,7 +298,7 @@ class CacheAwareProxyTest extends TestCase
         $this->app->make('db')->table('users')->cache(key: 'foo')->first();
 
         $store->shouldHaveReceived('has')->once();
-        $store->shouldHaveReceived('put')->with('cache-query|foo', Mockery::type('object'), 60);
+        $store->shouldHaveReceived('put')->with('cache-query|foo', Mockery::type('array'), 60);
     }
 
     public function test_exception_if_repository_store_is_not_lockable_when_waiting(): void
@@ -308,11 +318,17 @@ class CacheAwareProxyTest extends TestCase
 
     public function test_locks_cache_when_waiting(): void
     {
-        $hash = 'cache-query|695ux5/BjDB7/0BzMvbo+w==';
+        $hash = 'cache-query|30250dGAv64n2ySOIxuL+g==';
 
         $lock = $this->mock(Lock::class);
-        $lock->expects('block')->with(30)->once();
-        $lock->expects('release')->once();
+        $lock->expects('block')->withArgs(function ($time, $callback): bool {
+            static::assertSame(30, $time);
+            static::assertInstanceOf(Closure::class, $callback);
+
+            $callback();
+
+            return true;
+        })->once();
 
         $store = $this->mock(LockProvider::class);
         $store->expects('lock')->with($hash, 30)->andReturn($lock);
@@ -320,7 +336,7 @@ class CacheAwareProxyTest extends TestCase
         $repository = $this->mock(Repository::class);
         $repository->expects('getStore')->withNoArgs()->twice()->andReturn($store);
         $repository->expects('has')->andReturnFalse();
-        $repository->expects('put')->with($hash, Mockery::type('object'), 60);
+        $repository->expects('put')->with($hash, Mockery::type('array'), 60);
 
         $this->mock('cache')->shouldReceive('store')->with(null)->andReturn($repository);
 
@@ -355,25 +371,6 @@ class CacheAwareProxyTest extends TestCase
 
         static::assertEquals($cached, $renewed);
         static::assertEquals(2, $renewed->posts->first()->getKey());
-    }
-
-    public function test_cache_makes_queries_idempotent(): void
-    {
-        $this->app->make('db')->table('comments')->insert([
-            'post_id' => 1,
-            'body' => 'test',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        Comment::query()->cache()->whereKey(1)->increment('likes');
-        Comment::query()->cache()->whereKey(1)->increment('likes');
-        Comment::query()->cache()->whereKey(1)->increment('likes');
-
-        $this->assertDatabaseHas(Comment::class, [
-            'id' => 1,
-            'likes' => 1,
-        ]);
     }
 
     public function test_calling_to_sql_does_not_cache_result(): void
@@ -411,36 +408,50 @@ class CacheAwareProxyTest extends TestCase
         static::assertIsArray(User::query()->cache()->with('pages')->getEagerLoads());
     }
 
+    public function test_no_exception_when_caching_eloquent_query_twice(): void
+    {
+        $builder = User::query()->cache();
+
+        $proxy = $builder->getConnection();
+
+        static::assertInstanceOf(CacheAwareConnectionProxy::class, $proxy);
+        static::assertInstanceOf(ConnectionInterface::class, $proxy->connection);
+
+        $sameConnection = $builder->cache()->getConnection();
+
+        static::assertSame($proxy->connection, $sameConnection->connection);
+    }
+
+    public function test_pass_through_methods_to_wrapped_connection(): void
+    {
+        $this->app->make('db')->table('users')->cache()->getConnection()->setDatabaseName('foo');
+
+        static::assertSame(
+            'foo',
+            $this->app->make('db')->table('users')->cache()->getConnection()->getDatabaseName('foo')
+        );
+    }
+
     public function test_pass_through_properties_set_and_get(): void
     {
-        static::assertInstanceOf(
-            ConnectionInterface::class,
-            $this->app->make('db')->table('users')->cache()->connection
+        $this->app->make('db')->table('users')->cache()->getConnection()->foo = ['foo'];
+
+        static::assertSame(['foo'], $this->app->make('db')->table('users')->cache()->getConnection()->foo);
+    }
+
+    public function test_select_one_uses_cache(): void
+    {
+        $results = $this->app->make('db')->table('users')->cache()->getConnection()->selectOne(
+            'select id from users where id > ?', [1]
         );
 
-        $builder = $this->app->make('db')->table('users')->cache();
+        $this->app->make('db')->table('users')->delete();
 
-        $value = ['foo'];
+        $retrieved = $this->app->make('db')->table('users')->cache()->getConnection()->selectOne(
+            'select id from users where id > ?', [1]
+        );
 
-        $builder->bindings = $value;
-
-        static::assertSame($value, $builder->bindings);
-    }
-
-    public function test_exception_if_wrapping_the_cached_query_builder_twice(): void
-    {
-        $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('This builder instance is already wrapped into a cache proxy.');
-
-        $this->app->make('db')->table('users')->cache()->cache();
-    }
-
-    public function test_exception_if_wrapping_the_cached_eloquent_query_builder_twice(): void
-    {
-        $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('This builder instance is already wrapped into a cache proxy.');
-
-        User::query()->cache()->cache();
+        static::assertSame($results, $retrieved);
     }
 }
 

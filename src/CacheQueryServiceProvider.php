@@ -8,7 +8,6 @@ use DateTimeInterface;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\ServiceProvider;
-use function func_get_args;
 
 /**
  * @internal
@@ -65,9 +64,15 @@ class CacheQueryServiceProvider extends ServiceProvider
             string $key = '',
             string $store = null,
             int $wait = 0,
-        ): CacheAwareProxy {
+        ): Builder {
             /** @var \Illuminate\Database\Query\Builder $this */
-            return new CacheAwareProxy($this, Helpers::store($store, (bool) $wait), $key, $ttl, $wait);
+            if ($this->connection instanceof CacheAwareConnectionProxy) {
+                $this->connection = $this->connection->connection;
+            }
+
+            $this->connection = CacheAwareConnectionProxy::crateNewInstance($this->connection, $ttl, $key, $wait, $store);
+
+            return $this;
         };
     }
 
@@ -85,7 +90,7 @@ class CacheQueryServiceProvider extends ServiceProvider
             int $wait = 0,
         ): EloquentBuilder {
             /** @var \Illuminate\Database\Eloquent\Builder $this */
-            $this->setQuery($this->getQuery()->cache(...func_get_args()));
+            $this->getQuery()->cache($ttl, $key, $store, $wait);
 
             return $this;
         };
