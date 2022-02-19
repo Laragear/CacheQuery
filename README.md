@@ -53,7 +53,7 @@ User::where('is_author')->with('posts')->cache()->paginate();
 
 By default, results of a query are cached by 60 seconds, which is mostly enough when your application is getting hammered with the same query results.
 
-You're free to use any number of seconds or Carbon instance.
+You're free to use any number of seconds from now, or just a Carbon instance.
 
 ```php
 use Illuminate\Support\Facades\DB;
@@ -72,7 +72,7 @@ use App\Models\Article;
 Article::latest('published_at')->take(10)->cache(null)->get();
 ```
 
-Sometimes you may want to regenerate the results programmatically. To do that, set the time as `false`. This will repopulate the cache with the new results.
+Sometimes you may want to regenerate the results programmatically. To do that, set the time as `false`. This will repopulate the cache with the new results, even if these were not cached before.
 
 ```php
 use App\Models\Article;
