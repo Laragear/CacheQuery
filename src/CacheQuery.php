@@ -69,6 +69,7 @@ class CacheQuery
      *
      * @param  string  ...$keys
      * @return bool
+     *
      * @throws \Psr\SimpleCache\InvalidArgumentException
      */
     public function forget(string ...$keys): bool
@@ -81,6 +82,7 @@ class CacheQuery
      *
      * @param  array  $keys
      * @return \Illuminate\Support\Collection
+     *
      * @throws \Psr\SimpleCache\InvalidArgumentException
      */
     protected function getQueries(array $keys): Collection

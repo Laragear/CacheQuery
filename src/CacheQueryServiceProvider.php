@@ -34,11 +34,11 @@ class CacheQueryServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        if (!Builder::hasMacro('cache')) {
+        if (! Builder::hasMacro('cache')) {
             Builder::macro('cache', $this->macro());
         }
 
-        if (!EloquentBuilder::hasGlobalMacro('cache')) {
+        if (! EloquentBuilder::hasGlobalMacro('cache')) {
             EloquentBuilder::macro('cache', $this->eloquentMacro());
         }
 
