@@ -127,6 +127,52 @@ Post::latest('posted_at')->take(10)->cache(key: 'latest_articles')->get();
 CacheQuery::forget('latest_articles');
 ```
 
+
+## Configuration
+
+To further configure the package, publish the configuration file:
+
+```shell
+php artisan vendor:publish --provider="Laragear\CacheQuery\CacheQueryServiceProvider" --tag="config"
+```
+
+You will receive the `config/cache-query.php` config file with the following contents:
+
+```php
+<?php
+
+return [
+    'store' => env('CACHE_QUERY_STORE'),
+    'prefix' => 'cache-query',
+];
+```
+
+### Cache Store
+
+```php
+return  [
+    'store' => env('CACHE_QUERY_STORE'),
+];
+```
+
+The default cache store to use with all the queries results. When not issued in the query, this setting will be used. If it's empty or `null`, the default cache store of your application will be used.
+
+You can easily change this setting using your `.env` file:
+
+```dotenv
+CACHE_QUERY_STORE=redis
+```
+
+### Prefix
+
+```php
+return  [
+    'prefix' => 'cache-query',
+];
+```
+
+When storing query hashes and query named keys, this prefix will be appended, which will avoid conflicts with other cached keys. You can change it if there is other uses for this prefix.
+
 ## Caveats
 
 This cache package does some clever things to always retrieve the data from the cache, or populate it with the results, in an opaque way and using just one method, but this world is far from perfect.
@@ -151,7 +197,12 @@ To avoid this, ensure you always execute the same query, centralize the query so
 
 All queries are cached using a BASE64-MD5 hash of the connection name, SQL query and its bindings. This avoids any collision with other queries or different databases, while keeping the cache key short for a faster lookup in the cache store.
 
-This makes extremely difficult to remove keys from the cache. If you need to remove the results from the cache at any given time, especially to regenerate them, [use a custom key](#forgetting-results-with-a-key).
+```php
+User::query()->cache()->whereAge(20)->whereName('Joe')->first();
+// Cache key: "cache-query|muDJevbVppCsTFcdeZBxsA=="
+```
+
+This makes extremely difficult to remove keys from the cache. If you need to remove/invalidate/regenerate the cached results, [use a custom key](#forgetting-results-with-a-key).
 
 ## PhpStorm stubs
 
