@@ -277,9 +277,9 @@ class CacheAwareConnectionProxyTest extends TestCase
         $interval = $now->diffAsCarbonInterval(now());
 
         $repository = $this->mock(Repository::class);
-        $repository->expects('getMultiple')->with(['', $hash])->times(4)->andReturn(['' => null, $hash => null]);
+        $repository->expects('getMultiple')->with([$hash, ''])->times(4)->andReturn(['' => null, $hash => null]);
         $repository->allows('getStore')->never();
-        $repository->expects('put')->with($hash, Mockery::type('array'), null);
+        $repository->expects('forever')->with($hash, Mockery::type('array'));
         $repository->expects('put')->with($hash, Mockery::type('array'), $seconds);
         $repository->expects('put')->with($hash, Mockery::type('array'), $now);
         $repository->expects('put')->with($hash, Mockery::type('array'), $interval);
@@ -325,7 +325,7 @@ class CacheAwareConnectionProxyTest extends TestCase
         $store->expects('lock')->with($hash, 30)->andReturn($lock);
 
         $repository = $this->mock(Repository::class);
-        $repository->expects('getMultiple')->with(['', $hash])->andReturn(['' => null, $hash => null]);
+        $repository->expects('getMultiple')->with([$hash, ''])->andReturn(['' => null, $hash => null]);
         $repository->expects('getStore')->withNoArgs()->twice()->andReturn($store);
         $repository->expects('put')->with($hash, Mockery::type('array'), 60);
 
@@ -336,10 +336,15 @@ class CacheAwareConnectionProxyTest extends TestCase
 
     public function test_saves_user_key_with_real_computed_keys_list(): void
     {
+        $this->travelTo(now());
+
         $this->app->make('db')->table('users')->cache(key: 'foo')->first();
 
         static::assertTrue($this->app->make('cache')->has('cache-query|30250dGAv64n2ySOIxuL+g'));
-        static::assertSame(['cache-query|30250dGAv64n2ySOIxuL+g'], $this->app->make('cache')->get('cache-query|foo'));
+        static::assertSame(
+            ['list' => ['cache-query|30250dGAv64n2ySOIxuL+g'], 'expires_at' => now()->addMinute()->getTimestamp()],
+            $this->app->make('cache')->get('cache-query|foo')
+        );
     }
 
     public function test_first_query_takes_precedence_over_second_query_with_different_key(): void
@@ -351,15 +356,57 @@ class CacheAwareConnectionProxyTest extends TestCase
         static::assertFalse($this->app->make('cache')->has('cache-query|bar'));
     }
 
+    public function test_largest_ttl_key_takes_precedence(): void
+    {
+        $this->travelTo(now());
+
+        $this->app->make('db')->table('users')->whereKey(1)->cache(ttl: 120, key: 'foo')->first();
+        $this->app->make('db')->table('users')->whereKey(1)->cache(ttl: 30, key: 'foo')->first();
+
+        $this->app->make('db')->table('users')->whereKey(2)->cache(ttl: now()->addMinutes(2), key: 'bar')->first();
+        $this->app->make('db')->table('users')->whereKey(2)->cache(ttl: now()->addSeconds(30), key: 'bar')->first();
+
+        $this->app->make('db')->table('users')->whereKey(3)->cache(ttl: now()->addMinutes(2)->diffAsCarbonInterval(), key: 'baz')->first();
+        $this->app->make('db')->table('users')->whereKey(3)->cache(ttl: now()->addSeconds(30)->diffAsCarbonInterval(), key: 'baz')->first();
+
+        $this->app->make('db')->table('users')->whereKey(4)->cache(ttl: null, key: 'quz')->first();
+        $this->app->make('db')->table('users')->whereKey(4)->cache(ttl: 30, key: 'quz')->first();
+
+        $this->travelTo(now()->addMinute());
+
+        static::assertTrue($this->app->make('cache')->has('cache-query|foo'));
+        static::assertTrue($this->app->make('cache')->has('cache-query|bar'));
+        static::assertTrue($this->app->make('cache')->has('cache-query|baz'));
+        static::assertTrue($this->app->make('cache')->has('cache-query|quz'));
+
+        $this->travelTo(now()->addMinute());
+
+        static::assertTrue($this->app->make('cache')->has('cache-query|foo'));
+        static::assertTrue($this->app->make('cache')->has('cache-query|bar'));
+        static::assertTrue($this->app->make('cache')->has('cache-query|baz'));
+        static::assertTrue($this->app->make('cache')->has('cache-query|quz'));
+
+        $this->travelTo(now()->addSecond());
+
+        static::assertFalse($this->app->make('cache')->has('cache-query|foo'));
+        static::assertFalse($this->app->make('cache')->has('cache-query|bar'));
+        static::assertFalse($this->app->make('cache')->has('cache-query|baz'));
+
+        static::assertTrue($this->app->make('cache')->has('cache-query|quz'));
+    }
+
     public function test_different_queries_with_same_key_add_to_same_list(): void
     {
-        $this->app->make('db')->table('users')->cache(key: 'foo')->whereKey(1)->first();
-        $this->app->make('db')->table('users')->cache(key: 'foo')->whereKey(2)->first();
+        $this->app->make('db')->table('users')->cache(null, 'foo')->whereKey(1)->first();
+        $this->app->make('db')->table('users')->cache(null, 'foo')->whereKey(2)->first();
 
         static::assertTrue($this->app->make('cache')->has('cache-query|lcshtjL5jcPGJpqGWsPWaQ'));
         static::assertTrue($this->app->make('cache')->has('cache-query|w84Aok3o1/l4aW+qC/fUSQ'));
         static::assertSame(
-            ['cache-query|lcshtjL5jcPGJpqGWsPWaQ', 'cache-query|w84Aok3o1/l4aW+qC/fUSQ'],
+            [
+                'list' => ['cache-query|lcshtjL5jcPGJpqGWsPWaQ', 'cache-query|w84Aok3o1/l4aW+qC/fUSQ'],
+                'expires_at' => 'never',
+            ],
             $this->app->make('cache')->get('cache-query|foo')
         );
     }
@@ -413,24 +460,30 @@ class CacheAwareConnectionProxyTest extends TestCase
 
     public function test_cached_eager_loaded_query_with_user_key_saves_computed_query_keys_list(): void
     {
-        User::query()->cache(key: 'foo')->with('posts', function ($posts) {
+        User::query()->cache(null, 'foo')->with('posts', function ($posts) {
             $posts->whereKey(2);
         })->whereKey(1)->first();
 
         static::assertSame(
-            ['cache-query|O18ompNwDpTOa5rNZczCSw', 'cache-query|O18ompNwDpTOa5rNZczCSw.NF0RBjEJ/bDl95d8ryoKeg'],
+            [
+                'list' => ['cache-query|O18ompNwDpTOa5rNZczCSw', 'cache-query|O18ompNwDpTOa5rNZczCSw.NF0RBjEJ/bDl95d8ryoKeg'],
+                'expires_at' => 'never',
+            ],
             $this->app->make('cache')->get('cache-query|foo')
         );
     }
 
     public function test_overrides_cached_eager_load_query_with_parent_user_keys(): void
     {
-        User::query()->cache(key: 'foo')->with('posts', function ($posts) {
+        User::query()->cache(null, 'foo')->with('posts', function ($posts) {
             $posts->whereKey(2)->cache(key: 'bar');
         })->whereKey(1)->first();
 
         static::assertSame(
-            ['cache-query|O18ompNwDpTOa5rNZczCSw', 'cache-query|O18ompNwDpTOa5rNZczCSw.NF0RBjEJ/bDl95d8ryoKeg'],
+            [
+                'list' => ['cache-query|O18ompNwDpTOa5rNZczCSw', 'cache-query|O18ompNwDpTOa5rNZczCSw.NF0RBjEJ/bDl95d8ryoKeg'],
+                'expires_at' => 'never',
+            ],
             $this->app->make('cache')->get('cache-query|foo')
         );
 
@@ -461,15 +514,18 @@ class CacheAwareConnectionProxyTest extends TestCase
 
     public function test_cached_deep_eager_loaded_query_with_user_key_saves_computed_query_keys_list(): void
     {
-        User::query()->cache(key: 'foo')->with('posts', function ($posts) {
+        User::query()->cache(null, 'foo')->with('posts', function ($posts) {
             $posts->whereKey(2)->with('comments');
         })->whereKey(1)->first();
 
         static::assertSame(
             [
-                'cache-query|O18ompNwDpTOa5rNZczCSw',
-                'cache-query|O18ompNwDpTOa5rNZczCSw.NF0RBjEJ/bDl95d8ryoKeg',
-                'cache-query|O18ompNwDpTOa5rNZczCSw.NF0RBjEJ/bDl95d8ryoKeg.ULZsLi343YS0xbuO0VteEA'
+                'list' => [
+                    'cache-query|O18ompNwDpTOa5rNZczCSw',
+                    'cache-query|O18ompNwDpTOa5rNZczCSw.NF0RBjEJ/bDl95d8ryoKeg',
+                    'cache-query|O18ompNwDpTOa5rNZczCSw.NF0RBjEJ/bDl95d8ryoKeg.ULZsLi343YS0xbuO0VteEA'
+                ],
+                'expires_at' => 'never',
             ],
             $this->app->make('cache')->get('cache-query|foo')
         );
@@ -478,13 +534,16 @@ class CacheAwareConnectionProxyTest extends TestCase
     public function test_caches_above_one_level_deep_eager_load_relation_query(): void
     {
         User::query()->with('posts', function ($posts) {
-            $posts->whereKey(2)->cache(key: 'foo')->with('comments');
+            $posts->whereKey(2)->cache(null, 'foo')->with('comments');
         })->whereKey(1)->first();
 
         static::assertSame(
             [
-                'cache-query|NF0RBjEJ/bDl95d8ryoKeg',
-                'cache-query|NF0RBjEJ/bDl95d8ryoKeg.ULZsLi343YS0xbuO0VteEA'
+                'list' => [
+                    'cache-query|NF0RBjEJ/bDl95d8ryoKeg',
+                    'cache-query|NF0RBjEJ/bDl95d8ryoKeg.ULZsLi343YS0xbuO0VteEA'
+                ],
+                'expires_at' => 'never',
             ],
             $this->app->make('cache')->get('cache-query|foo')
         );

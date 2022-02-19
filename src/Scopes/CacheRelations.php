@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Scope;
 class CacheRelations implements Scope
 {
     public function __construct(
-        protected DateTimeInterface|DateInterval|int $ttl,
+        protected DateTimeInterface|DateInterval|int|null $ttl,
         protected string $key,
         protected ?string $store,
         protected int $wait,

@@ -16,6 +16,7 @@ use function base64_encode;
 use function cache;
 use function config;
 use function implode;
+use function max;
 use function md5;
 use function rtrim;
 
@@ -72,17 +73,22 @@ class CacheAwareConnectionProxy
         return $this
             ->retrieveLock($key)
             ->block($this->lockWait, function () use ($query, $bindings, $useReadPdo, $key): array {
-                [$list, $results] = array_values($this->repository->getMultiple([$this->userKey, $key]));
+                [$results, $list] = array_values($this->repository->getMultiple([
+                    $key, $this->userKey,
+                ]));
 
                 if ($results === null) {
                     $results = $this->connection->select($query, $bindings, $useReadPdo);
 
-                    // If the user added a user key, we will append this computed key to it and save it.
-                    if ($this->userKey) {
-                        $list[] = $key;
-                        $this->repository->putMany([$key => $results, $this->userKey => $list], $this->ttl);
+                    if ($this->ttl === null) {
+                        $this->repository->forever($key, $results);
                     } else {
                         $this->repository->put($key, $results, $this->ttl);
+                    }
+
+                    // If the user added a user key, we will append this computed key to it and save it.
+                    if ($this->userKey) {
+                        $this->addComputedKeyToUserKey($key, $list);
                     }
                 }
 
@@ -130,6 +136,52 @@ class CacheAwareConnectionProxy
         }
 
         return $this->repository->getStore()->lock($key, $this->lockWait);
+    }
+
+    /**
+     * Adds the computed key to the user key queries list.
+     *
+     * @param  string  $key
+     * @param  array|null  $list
+     * @return void
+     */
+    protected function addComputedKeyToUserKey(string $key, ?array $list): void
+    {
+        $list['list'][] = $key;
+
+        if ($this->ttl === null) {
+            $list['expires_at'] = 'never';
+        }
+
+        $list['expires_at'] ??= $this->getTimestamp($this->ttl);
+
+        if ($list['expires_at'] === 'never') {
+            $this->repository->forever($this->userKey, $list);
+            return;
+        }
+
+        $list['expires_at'] = max($this->getTimestamp($this->ttl), $list['expires_at']);
+
+        $this->repository->put($this->userKey, $list, $this->ttl);
+    }
+
+    /**
+     * Gets the timestamp for the expiration time.
+     *
+     * @param  \DateInterval|\DateTimeInterface|int  $expiration
+     * @return int
+     */
+    protected function getTimestamp(DateInterval|DateTimeInterface|int $expiration): int
+    {
+        if ($expiration instanceof DateTimeInterface) {
+            return $expiration->getTimestamp();
+        }
+
+        if ($expiration instanceof DateInterval) {
+            return now()->add($expiration)->getTimestamp();
+        }
+
+        return now()->addRealSeconds($expiration)->getTimestamp();
     }
 
     /**
