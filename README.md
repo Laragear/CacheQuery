@@ -151,7 +151,7 @@ To avoid this, ensure you always execute the same query, centralize the query so
 
 All queries are cached using a BASE64-MD5 hash of the connection name, SQL query and its bindings. This avoids any collision with other queries or different databases, while keeping the cache key short for a faster lookup in the cache store.
 
-This makes extremely difficult to remove keys from the cache. If you need to remove the results from the cache at any given time, [use a custom key](#forgetting-results-with-a-key).
+This makes extremely difficult to remove keys from the cache. If you need to remove the results from the cache at any given time, especially to regenerate them, [use a custom key](#forgetting-results-with-a-key).
 
 ## PhpStorm stubs
 
