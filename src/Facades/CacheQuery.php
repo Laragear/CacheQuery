@@ -7,7 +7,6 @@ use Illuminate\Support\Facades\Facade;
 /**
  * @method static \Laragear\CacheQuery\CacheQuery store(string $store)
  * @method static bool forget(string ...$keys)
- *
  * @method static \Laragear\CacheQuery\CacheQuery getFacadeRoot()
  */
 class CacheQuery extends Facade

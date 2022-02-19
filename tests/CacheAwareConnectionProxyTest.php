@@ -545,7 +545,7 @@ class CacheAwareConnectionProxyTest extends TestCase
                 'list' => [
                     'cache-query|O18ompNwDpTOa5rNZczCSw',
                     'cache-query|O18ompNwDpTOa5rNZczCSw.NF0RBjEJ/bDl95d8ryoKeg',
-                    'cache-query|O18ompNwDpTOa5rNZczCSw.NF0RBjEJ/bDl95d8ryoKeg.ULZsLi343YS0xbuO0VteEA'
+                    'cache-query|O18ompNwDpTOa5rNZczCSw.NF0RBjEJ/bDl95d8ryoKeg.ULZsLi343YS0xbuO0VteEA',
                 ],
                 'expires_at' => 'never',
             ],
@@ -563,7 +563,7 @@ class CacheAwareConnectionProxyTest extends TestCase
             [
                 'list' => [
                     'cache-query|NF0RBjEJ/bDl95d8ryoKeg',
-                    'cache-query|NF0RBjEJ/bDl95d8ryoKeg.ULZsLi343YS0xbuO0VteEA'
+                    'cache-query|NF0RBjEJ/bDl95d8ryoKeg.ULZsLi343YS0xbuO0VteEA',
                 ],
                 'expires_at' => 'never',
             ],
