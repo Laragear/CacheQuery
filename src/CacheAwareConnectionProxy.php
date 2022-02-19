@@ -11,7 +11,6 @@ use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Database\ConnectionInterface;
 use LogicException;
 use function array_shift;
-use function array_values;
 use function base64_encode;
 use function cache;
 use function config;
@@ -73,9 +72,7 @@ class CacheAwareConnectionProxy
         return $this
             ->retrieveLock($key)
             ->block($this->lockWait, function () use ($query, $bindings, $useReadPdo, $key): array {
-                [$results, $list] = array_values($this->repository->getMultiple([
-                    $key, $this->userKey,
-                ]));
+                [$key => $results, $this->userKey => $list] = $this->repository->getMultiple([$key, $this->userKey]);
 
                 if ($results === null) {
                     $results = $this->connection->select($query, $bindings, $useReadPdo);
