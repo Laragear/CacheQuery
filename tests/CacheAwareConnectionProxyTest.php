@@ -360,17 +360,17 @@ class CacheAwareConnectionProxyTest extends TestCase
     {
         $this->travelTo(now());
 
-        $this->app->make('db')->table('users')->whereKey(1)->cache(ttl: 120, key: 'foo')->first();
-        $this->app->make('db')->table('users')->whereKey(1)->cache(ttl: 30, key: 'foo')->first();
+        $this->app->make('db')->table('users')->where('id', 1)->cache(ttl: 120, key: 'foo')->first();
+        $this->app->make('db')->table('users')->where('id', 1)->cache(ttl: 30, key: 'foo')->first();
 
-        $this->app->make('db')->table('users')->whereKey(2)->cache(ttl: now()->addMinutes(2), key: 'bar')->first();
-        $this->app->make('db')->table('users')->whereKey(2)->cache(ttl: now()->addSeconds(30), key: 'bar')->first();
+        $this->app->make('db')->table('users')->where('id', 2)->cache(ttl: now()->addMinutes(2), key: 'bar')->first();
+        $this->app->make('db')->table('users')->where('id', 2)->cache(ttl: now()->addSeconds(30), key: 'bar')->first();
 
-        $this->app->make('db')->table('users')->whereKey(3)->cache(ttl: now()->addMinutes(2)->diffAsCarbonInterval(), key: 'baz')->first();
-        $this->app->make('db')->table('users')->whereKey(3)->cache(ttl: now()->addSeconds(30)->diffAsCarbonInterval(), key: 'baz')->first();
+        $this->app->make('db')->table('users')->where('id', 3)->cache(ttl: now()->addMinutes(2)->diffAsCarbonInterval(), key: 'baz')->first();
+        $this->app->make('db')->table('users')->where('id', 3)->cache(ttl: now()->addSeconds(30)->diffAsCarbonInterval(), key: 'baz')->first();
 
-        $this->app->make('db')->table('users')->whereKey(4)->cache(ttl: null, key: 'quz')->first();
-        $this->app->make('db')->table('users')->whereKey(4)->cache(ttl: 30, key: 'quz')->first();
+        $this->app->make('db')->table('users')->where('id', 4)->cache(ttl: null, key: 'quz')->first();
+        $this->app->make('db')->table('users')->where('id', 4)->cache(ttl: 30, key: 'quz')->first();
 
         $this->travelTo(now()->addMinute());
 
@@ -395,16 +395,38 @@ class CacheAwareConnectionProxyTest extends TestCase
         static::assertTrue($this->app->make('cache')->has('cache-query|quz'));
     }
 
+    public function test_regenerates_cache_using_false_ttl(): void
+    {
+        $this->app->make('db')->table('users')->where('id', 1)->cache()->first();
+
+        $this->app->make('db')->table('users')->where('id', 1)->update(['name' => 'test']);
+
+        $result = $this->app->make('db')->table('users')->where('id', 1)->cache(false)->first();
+
+        static::assertSame('test', $result->name);
+    }
+
+    public function test_regenerates_cache_using_ttl_with_negative_number(): void
+    {
+        $this->app->make('db')->table('users')->where('id', 1)->cache()->first();
+
+        $this->app->make('db')->table('users')->where('id', 1)->update(['name' => 'test']);
+
+        $result = $this->app->make('db')->table('users')->where('id', 1)->cache(-1)->first();
+
+        static::assertSame('test', $result->name);
+    }
+
     public function test_different_queries_with_same_key_add_to_same_list(): void
     {
-        $this->app->make('db')->table('users')->cache(null, 'foo')->whereKey(1)->first();
-        $this->app->make('db')->table('users')->cache(null, 'foo')->whereKey(2)->first();
+        $this->app->make('db')->table('users')->cache(null, 'foo')->where('id', 1)->first();
+        $this->app->make('db')->table('users')->cache(null, 'foo')->where('id', 2)->first();
 
-        static::assertTrue($this->app->make('cache')->has('cache-query|lcshtjL5jcPGJpqGWsPWaQ'));
-        static::assertTrue($this->app->make('cache')->has('cache-query|w84Aok3o1/l4aW+qC/fUSQ'));
+        static::assertTrue($this->app->make('cache')->has('cache-query|fj8Xyz4K1Zh0tdAamPbG1A'));
+        static::assertTrue($this->app->make('cache')->has('cache-query|u7YzPIzZNGNu7Dkr/kx4Iw'));
         static::assertSame(
             [
-                'list' => ['cache-query|lcshtjL5jcPGJpqGWsPWaQ', 'cache-query|w84Aok3o1/l4aW+qC/fUSQ'],
+                'list' => ['cache-query|fj8Xyz4K1Zh0tdAamPbG1A', 'cache-query|u7YzPIzZNGNu7Dkr/kx4Iw'],
                 'expires_at' => 'never',
             ],
             $this->app->make('cache')->get('cache-query|foo')

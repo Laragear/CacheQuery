@@ -60,7 +60,7 @@ class CacheQueryServiceProvider extends ServiceProvider
     protected function macro(): Closure
     {
         return function (
-            DateTimeInterface|DateInterval|int|null $ttl = 60,
+            DateTimeInterface|DateInterval|int|bool|null $ttl = 60,
             string $key = '',
             string $store = null,
             int $wait = 0,
@@ -73,7 +73,7 @@ class CacheQueryServiceProvider extends ServiceProvider
             }
 
             $this->connection = CacheAwareConnectionProxy::crateNewInstance(
-                $this->connection, $ttl, $key, $wait, $store
+                $this->connection, $ttl === false ? -1 : $ttl, $key, $wait, $store
             );
 
             return $this;
@@ -88,16 +88,19 @@ class CacheQueryServiceProvider extends ServiceProvider
     protected function eloquentMacro(): Closure
     {
         return function (
-            DateTimeInterface|DateInterval|int|null $ttl = 60,
+            DateTimeInterface|DateInterval|int|bool|null $ttl = 60,
             string $key = '',
             string $store = null,
-            int $wait = 0
+            int $wait = 0,
         ): EloquentBuilder {
             /** @var \Illuminate\Database\Eloquent\Builder $this */
             $this->getQuery()->cache($ttl, $key, $store, $wait);
 
             // This global scope is responsible for caching eager loaded relations.
-            $this->withGlobalScope(Scopes\CacheRelations::class, new Scopes\CacheRelations($ttl, $key, $store, $wait));
+            $this->withGlobalScope(
+                Scopes\CacheRelations::class,
+                new Scopes\CacheRelations($ttl === false ? -1 : $ttl, $key, $store, $wait)
+            );
 
             return $this;
         };

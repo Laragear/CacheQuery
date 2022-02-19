@@ -64,6 +64,22 @@ DB::table('articles')->latest('published_at')->take(10)->cache(120)->get();
 Article::latest('published_at')->take(10)->cache(now()->addHour())->get();
 ```
 
+You can also use `null` to set the query results forever.
+
+```php
+use App\Models\Article;
+
+Article::latest('published_at')->take(10)->cache(null)->get();
+```
+
+Sometimes you may want to regenerate the results programmatically. To do that, set the time as `false`. This will repopulate the cache with the new results.
+
+```php
+use App\Models\Article;
+
+Article::latest('published_at')->take(10)->cache(false)->get();
+```
+
 ### Custom Cache Store
 
 You can use any other Cache Store different from the application default by setting a third parameter, or a named parameter.
@@ -126,7 +142,6 @@ Post::latest('posted_at')->take(10)->cache(key: 'latest_articles')->get();
 
 CacheQuery::forget('latest_articles');
 ```
-
 
 ## Configuration
 

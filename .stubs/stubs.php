@@ -10,17 +10,17 @@ namespace Illuminate\Database\Query {
         /**
          * Caches the underlying query results.
          *
-         * @param  \DateTimeInterface|\DateInterval|int|null  $ttl
+         * @param  \DateTimeInterface|\DateInterval|int|bool|null  $ttl
          * @param  string  $key
          * @param  string|null  $store
          * @param  int  $wait
          * @return static
          */
         public function cache(
-            DateTimeInterface|DateInterval|int|null $ttl = null,
+            DateTimeInterface|DateInterval|int|bool|null $ttl = null,
             string $key = '',
             string $store = null,
-            int $wait = 0
+            int $wait = 0,
         ): static {
             //
         }
@@ -37,17 +37,17 @@ namespace Illuminate\Database\Eloquent {
         /**
          * Caches the underlying query results.
          *
-         * @param  \DateTimeInterface|\DateInterval|int|null  $ttl
+         * @param  \DateTimeInterface|\DateInterval|int|bool|null  $ttl
          * @param  string  $key
          * @param  string|null  $store
          * @param  int  $wait
          * @return static
          */
         public function cache(
-            DateTimeInterface|DateInterval|int|null $ttl = null,
+            DateTimeInterface|DateInterval|int|bool|null $ttl = null,
             string $key = '',
             string $store = null,
-            int $wait = 0
+            int $wait = 0,
         ): static {
             //
         }

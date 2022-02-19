@@ -15,6 +15,7 @@ use function base64_encode;
 use function cache;
 use function config;
 use function implode;
+use function is_int;
 use function max;
 use function md5;
 use function rtrim;
@@ -72,7 +73,7 @@ class CacheAwareConnectionProxy
         return $this
             ->retrieveLock($key)
             ->block($this->lockWait, function () use ($query, $bindings, $useReadPdo, $key): array {
-                [$key => $results, $this->userKey => $list] = $this->repository->getMultiple([$key, $this->userKey]);
+                [$key => $results, $this->userKey => $list] = $this->retrieveResultsFromCache($key);
 
                 if ($results === null) {
                     $results = $this->connection->select($query, $bindings, $useReadPdo);
@@ -133,6 +134,23 @@ class CacheAwareConnectionProxy
         }
 
         return $this->repository->getStore()->lock($key, $this->lockWait);
+    }
+
+    /**
+     * Retrieve the results from the cache.
+     *
+     * @param  string  $key
+     * @return null[]
+     * @throws \Psr\SimpleCache\InvalidArgumentException
+     */
+    protected function retrieveResultsFromCache(string $key): array
+    {
+        // If the ttl is negative, regenerate the results.
+        if (is_int($this->ttl) && $this->ttl < 1) {
+            return [$key => null, $this->userKey => null];
+        }
+
+        return $this->repository->getMultiple([$key, $this->userKey]);
     }
 
     /**
