@@ -48,9 +48,9 @@ class Forget extends Command
 
         if ($cacheQuery->store($store)->forget(...$keys)) {
             if ($count > 1) {
-                $this->line("Successfully removed [$count] keys from the [$store] cache store.");
+                $this->info("Successfully removed [$count] keys from the [$store] cache store.");
             } else {
-                $this->line("Successfully removed [$keys[0]] key from the [$store] cache store.");
+                $this->info("Successfully removed [$keys[0]] key from the [$store] cache store.");
             }
         } else {
             if ($count > 1) {
