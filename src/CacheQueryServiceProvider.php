@@ -97,10 +97,7 @@ class CacheQueryServiceProvider extends ServiceProvider
             $this->getQuery()->cache($ttl, $key, $store, $wait);
 
             // This global scope is responsible for caching eager loaded relations.
-            $this->withGlobalScope(
-                Scopes\AddCacheToRelations::class,
-                new Scopes\AddCacheToRelations($ttl, $key, $store, $wait)
-            );
+            $this->withGlobalScope(Scopes\CacheRelations::class, new Scopes\CacheRelations($ttl, $key, $store, $wait));
 
             return $this;
         };

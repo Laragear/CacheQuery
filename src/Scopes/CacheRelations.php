@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Scope;
 
-class AddCacheToRelations implements Scope
+class CacheRelations implements Scope
 {
     public function __construct(
         protected DateTimeInterface|DateInterval|int $ttl,
