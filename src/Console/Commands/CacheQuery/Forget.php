@@ -4,6 +4,8 @@ namespace Laragear\CacheQuery\Console\Commands\CacheQuery;
 
 use Illuminate\Console\Command;
 use Laragear\CacheQuery\CacheQuery;
+use function array_map;
+use function explode;
 
 class Forget extends Command
 {
@@ -20,7 +22,7 @@ class Forget extends Command
      * @var string
      */
     protected $signature = 'cache-query:forget
-                            {key : The key name of the query to forget from the cache}
+                            {keys : The key names of the queries to forget from the cache, comma separated}
                             {--store= : The cache store to use}';
 
     /**
@@ -40,12 +42,22 @@ class Forget extends Command
     {
         $store = $this->option('store') ?: config('cache-query.store') ?? cache()->getDefaultDriver();
 
-        $key = $this->argument('key');
+        $keys = array_map('trim', explode(',', $this->argument('keys')) ?: []);
 
-        if ($cacheQuery->store($store)->forget($key)) {
-            $this->line("Successfully removed [$key] from the [$store] cache store.");
+        $count = count($keys);
+
+        if ($cacheQuery->store($store)->forget(...$keys)) {
+            if ($count > 1) {
+                $this->line("Successfully removed [$count] keys from the [$store] cache store.");
+            } else {
+                $this->line("Successfully removed [$keys[0]] key from the [$store] cache store.");
+            }
         } else {
-            $this->warn("The [$key] was not found in [$store] cache store.");
+            if ($count > 1) {
+                $this->warn("Removed [$count] keys, but some were not found in [$store] cache store.");
+            } else {
+                $this->warn("The [$keys[0]] key was not found in [$store] cache store.");
+            }
         }
     }
 }
