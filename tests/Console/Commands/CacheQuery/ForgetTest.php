@@ -2,15 +2,16 @@
 
 namespace Tests\Console\Commands\CacheQuery;
 
-use Illuminate\Contracts\Cache\Factory;
-use Illuminate\Contracts\Cache\Repository;
+use Laragear\CacheQuery\CacheQuery;
 use Tests\TestCase;
 
 class ForgetTest extends TestCase
 {
     public function test_removes_key_from_default_cache_store(): void
     {
-        $this->app->make('cache')->store()->put('cache-query|foo', true);
+        $cacheQuery = $this->mock(CacheQuery::class);
+        $cacheQuery->expects('store')->with('array')->andReturnSelf();
+        $cacheQuery->expects('forget')->with('foo')->andReturnTrue();
 
         $this->artisan('cache-query:forget foo')
             ->assertSuccessful()
@@ -19,11 +20,9 @@ class ForgetTest extends TestCase
 
     public function test_removes_key_from_named_cache_store(): void
     {
-        $repository = $this->mock(Repository::class);
-
-        $repository->expects('forget')->with('cache-query|foo')->andReturnTrue();
-
-        $this->mock(Factory::class)->expects('store')->with('bar')->andReturn($repository);
+        $cacheQuery = $this->mock(CacheQuery::class);
+        $cacheQuery->expects('store')->with('bar')->andReturnSelf();
+        $cacheQuery->expects('forget')->with('foo')->andReturnTrue();
 
         $this->artisan('cache-query:forget foo --store=bar')
             ->assertSuccessful()
@@ -34,11 +33,9 @@ class ForgetTest extends TestCase
     {
         $this->app->make('config')->set('cache-query.store', 'bar');
 
-        $repository = $this->mock(Repository::class);
-
-        $repository->expects('forget')->with('cache-query|foo')->andReturnTrue();
-
-        $this->mock(Factory::class)->expects('store')->with('bar')->andReturn($repository);
+        $cacheQuery = $this->mock(CacheQuery::class);
+        $cacheQuery->expects('store')->with('bar')->andReturnSelf();
+        $cacheQuery->expects('forget')->with('foo')->andReturnTrue();
 
         $this->artisan('cache-query:forget foo')
             ->assertSuccessful()
@@ -47,6 +44,10 @@ class ForgetTest extends TestCase
 
     public function test_warns_key_not_found_in_cache_store(): void
     {
+        $cacheQuery = $this->mock(CacheQuery::class);
+        $cacheQuery->expects('store')->with('array')->andReturnSelf();
+        $cacheQuery->expects('forget')->with('foo')->andReturnFalse();
+
         $this->artisan('cache-query:forget foo')
             ->assertSuccessful()
             ->expectsOutput('The [foo] was not found in [array] cache store.');

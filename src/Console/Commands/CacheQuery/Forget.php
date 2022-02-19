@@ -3,10 +3,7 @@
 namespace Laragear\CacheQuery\Console\Commands\CacheQuery;
 
 use Illuminate\Console\Command;
-use Illuminate\Contracts\Cache\Factory as CacheContract;
-use Illuminate\Contracts\Config\Repository as ConfigContract;
-use JetBrains\PhpStorm\ArrayShape;
-use function str;
+use Laragear\CacheQuery\CacheQuery;
 
 class Forget extends Command
 {
@@ -36,35 +33,19 @@ class Forget extends Command
     /**
      * Execute the console command.
      *
-     * @param  \Illuminate\Contracts\Cache\Factory  $cache
-     * @param  \Illuminate\Contracts\Config\Repository  $config
+     * @param  \Laragear\CacheQuery\CacheQuery  $cacheQuery
      * @return void
      */
-    public function handle(CacheContract $cache, ConfigContract $config): void
+    public function handle(CacheQuery $cacheQuery): void
     {
-        $store = $this->option('store') ?: $config->get('cache-query.store') ?? $cache->getDefaultDriver();
+        $store = $this->option('store') ?: config('cache-query.store') ?? cache()->getDefaultDriver();
 
-        [$key, $cacheKey] = $this->retrieveKey($config);
+        $key = $this->argument('key');
 
-        if ($cache->store($store)->forget($cacheKey)) {
+        if ($cacheQuery->store($store)->forget($key)) {
             $this->line("Successfully removed [$key] from the [$store] cache store.");
         } else {
             $this->warn("The [$key] was not found in [$store] cache store.");
         }
-    }
-
-    /**
-     * Returns the original key and the cache key.
-     *
-     * @param  \Illuminate\Contracts\Config\Repository  $config
-     * @return array<int, string>
-     */
-    #[ArrayShape([0 => 'string', 1 => 'string'])]
-    protected function retrieveKey(ConfigContract $config): array
-    {
-        return [
-            $this->argument('key'),
-            (string) str($config->get('cache-query.prefix'))->finish('|')->append($this->argument('key')),
-        ];
     }
 }
