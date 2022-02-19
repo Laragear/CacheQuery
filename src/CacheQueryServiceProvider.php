@@ -60,7 +60,7 @@ class CacheQueryServiceProvider extends ServiceProvider
     protected function macro(): Closure
     {
         return function (
-            DateTimeInterface|DateInterval|int $ttl = 60,
+            DateTimeInterface|DateInterval|int|null $ttl = 60,
             string $key = '',
             string $store = null,
             int $wait = 0,
@@ -88,7 +88,7 @@ class CacheQueryServiceProvider extends ServiceProvider
     protected function eloquentMacro(): Closure
     {
         return function (
-            int|DateTimeInterface|DateInterval $ttl = 60,
+            DateTimeInterface|DateInterval|int|null $ttl = 60,
             string $key = '',
             string $store = null,
             int $wait = 0

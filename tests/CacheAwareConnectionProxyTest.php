@@ -277,14 +277,16 @@ class CacheAwareConnectionProxyTest extends TestCase
         $interval = $now->diffAsCarbonInterval(now());
 
         $repository = $this->mock(Repository::class);
-        $repository->expects('getMultiple')->with(['', $hash])->times(3)->andReturn(['' => null, $hash => null]);
+        $repository->expects('getMultiple')->with(['', $hash])->times(4)->andReturn(['' => null, $hash => null]);
         $repository->allows('getStore')->never();
+        $repository->expects('put')->with($hash, Mockery::type('array'), null);
         $repository->expects('put')->with($hash, Mockery::type('array'), $seconds);
         $repository->expects('put')->with($hash, Mockery::type('array'), $now);
         $repository->expects('put')->with($hash, Mockery::type('array'), $interval);
 
         $this->mock('cache')->allows('store')->with(null)->andReturn($repository);
 
+        $this->app->make('db')->table('users')->cache(null)->first();
         $this->app->make('db')->table('users')->cache($seconds)->first();
         $this->app->make('db')->table('users')->cache($now)->first();
         $this->app->make('db')->table('users')->cache($interval)->first();

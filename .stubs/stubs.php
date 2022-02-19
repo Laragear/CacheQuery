@@ -10,14 +10,14 @@ namespace Illuminate\Database\Query {
         /**
          * Caches the underlying query results.
          *
-         * @param  int|\DateTimeInterface|\DateInterval  $ttl
+         * @param  \DateTimeInterface|\DateInterval|int|null  $ttl
          * @param  string  $key
          * @param  string|null  $store
          * @param  int  $wait
          * @return static
          */
         public function cache(
-            int|DateTimeInterface|DateInterval $ttl = 60,
+            DateTimeInterface|DateInterval|int|null $ttl = null,
             string $key = '',
             string $store = null,
             int $wait = 0

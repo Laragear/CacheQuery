@@ -26,7 +26,7 @@ class CacheAwareConnectionProxy
      *
      * @param  \Illuminate\Database\ConnectionInterface  $connection
      * @param  \Illuminate\Contracts\Cache\Repository  $repository
-     * @param  \DateTimeInterface|\DateInterval|int  $ttl
+     * @param  \DateTimeInterface|\DateInterval|int|null  $ttl
      * @param  int  $lockWait
      * @param  string  $cachePrefix
      * @param  string  $userKey
