@@ -11,11 +11,13 @@ use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Database\ConnectionInterface;
 use LogicException;
 use function array_shift;
+use function array_values;
 use function base64_encode;
 use function cache;
 use function config;
 use function implode;
 use function md5;
+use function rtrim;
 
 class CacheAwareConnectionProxy
 {
@@ -24,18 +26,26 @@ class CacheAwareConnectionProxy
      *
      * @param  \Illuminate\Database\ConnectionInterface  $connection
      * @param  \Illuminate\Contracts\Cache\Repository  $repository
-     * @param  string  $queryKey
      * @param  \DateTimeInterface|\DateInterval|int  $ttl
      * @param  int  $lockWait
+     * @param  string  $cachePrefix
+     * @param  string  $userKey
+     * @param  string  $computedKey
+     * @param  string  $queryKeySuffix
      */
     public function __construct(
         public ConnectionInterface $connection,
         protected Repository $repository,
-        protected string $queryKey,
-        protected DateTimeInterface|DateInterval|int $ttl,
+        protected DateTimeInterface|DateInterval|int|null $ttl,
         protected int $lockWait,
+        protected string $cachePrefix,
+        public string $userKey = '',
+        public string $computedKey = '',
+        public string $queryKeySuffix = '',
     ) {
-        //
+        if ($this->userKey) {
+            $this->userKey = $this->cachePrefix.'|'.$this->userKey;
+        }
     }
 
     /**
@@ -44,23 +54,40 @@ class CacheAwareConnectionProxy
      * @param  string  $query
      * @param  array  $bindings
      * @param  bool  $useReadPdo
-     * @return array
+     * @return mixed
      */
     public function select($query, $bindings = [], $useReadPdo = true)
     {
-        $key = config('cache-query.prefix').'|'.($this->queryKey ?: $this->getQueryHash($query, $bindings));
+        // Create the unique hash for the query to avoid any duplicate query.
+        $this->computedKey = $this->getQueryHash($query, $bindings);
 
-        $results = $this->checkForCachedResult($key);
-
-        if ($results !== false) {
-            return $results;
+        // We will append the previous related query to the computed key.
+        if ($this->queryKeySuffix) {
+            $this->computedKey = $this->queryKeySuffix.'.'.$this->computedKey;
         }
 
-        $results = $this->connection->select($query, $bindings, $useReadPdo);
+        // We will use the prefix to operate on the cache directly.
+        $key = $this->cachePrefix.'|'.$this->computedKey;
 
-        $this->repository->put($key, $results, $this->ttl);
+        return $this
+            ->retrieveLock($key)
+            ->block($this->lockWait, function () use ($query, $bindings, $useReadPdo, $key): array {
+                [$list, $results] = array_values($this->repository->getMultiple([$this->userKey, $key]));
 
-        return $results;
+                if ($results === null) {
+                    $results = $this->connection->select($query, $bindings, $useReadPdo);
+
+                    // If the user added a user key, we will append this computed key to it and save it.
+                    if ($this->userKey) {
+                        $list[] = $key;
+                        $this->repository->putMany([$key => $results, $this->userKey => $list], $this->ttl);
+                    } else {
+                        $this->repository->put($key, $results, $this->ttl);
+                    }
+                }
+
+                return $results;
+            });
     }
 
     /**
@@ -79,19 +106,6 @@ class CacheAwareConnectionProxy
     }
 
     /**
-     * Checks if the result exists in the cache, and returns in.
-     *
-     * @param  string  $key
-     * @return mixed
-     */
-    protected function checkForCachedResult(string $key): mixed
-    {
-        return $this->retrieveLock($key)->block($this->lockWait, function () use ($key) {
-            return $this->repository->get($key, false);
-        });
-    }
-
-    /**
      * Hashes the incoming query for using as cache key.
      *
      * @param  string  $query
@@ -100,7 +114,7 @@ class CacheAwareConnectionProxy
      */
     protected function getQueryHash(string $query, array $bindings): string
     {
-        return base64_encode(md5($this->connection->getDatabaseName().$query.implode('', $bindings), true));
+        return rtrim(base64_encode(md5($this->connection->getDatabaseName().$query.implode('', $bindings), true)), '=');
     }
 
     /**
@@ -111,7 +125,7 @@ class CacheAwareConnectionProxy
      */
     protected function retrieveLock(string $key): Lock
     {
-        if (! $this->lockWait) {
+        if (!$this->lockWait) {
             return new NoLock($key, $this->lockWait);
         }
 
@@ -158,22 +172,27 @@ class CacheAwareConnectionProxy
      * Create a new CacheAwareProxy instance.
      *
      * @param  \Illuminate\Database\ConnectionInterface  $connection
-     * @param  \DateTimeInterface|\DateInterval|int  $ttl
+     * @param  \DateTimeInterface|\DateInterval|int|null  $ttl
      * @param  string  $key
-     * @param  int  $lockWait
+     * @param  int  $wait
      * @param  string|null  $store
      * @return static
      */
     public static function crateNewInstance(
         ConnectionInterface $connection,
-        DateTimeInterface|DateInterval|int $ttl,
+        DateTimeInterface|DateInterval|int|null $ttl,
         string $key,
-        int $lockWait,
+        int $wait,
         ?string $store,
     ): static {
-        $repository = static::store($store, (bool) $lockWait);
-
-        return new static($connection, $repository, $key, $ttl, $lockWait);
+        return new static(
+            $connection,
+            static::store($store, (bool) $wait),
+            $ttl,
+            $wait,
+            config('cache-query.prefix'),
+            $key
+        );
     }
 
     /**
@@ -183,11 +202,11 @@ class CacheAwareConnectionProxy
      * @param  bool  $lockable
      * @return \Illuminate\Contracts\Cache\Repository
      */
-    protected static function store(?string $store, bool $lockable = false): Repository
+    protected static function store(?string $store, bool $lockable): Repository
     {
         $repository = cache()->store($store ?? config('cache-query.store'));
 
-        if ($lockable && ! $repository->getStore() instanceof LockProvider) {
+        if ($lockable && !$repository->getStore() instanceof LockProvider) {
             $store ??= cache()->getDefaultDriver();
 
             throw new LogicException("The [$store] cache does not support atomic locks.");

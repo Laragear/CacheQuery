@@ -5,6 +5,7 @@ namespace Laragear\CacheQuery;
 use Closure;
 use DateInterval;
 use DateTimeInterface;
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\ServiceProvider;
 
@@ -33,8 +34,12 @@ class CacheQueryServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        if (! Builder::hasMacro('cache')) {
+        if (!Builder::hasMacro('cache')) {
             Builder::macro('cache', $this->macro());
+        }
+
+        if (!EloquentBuilder::hasGlobalMacro('cache')) {
+            EloquentBuilder::macro('cache', $this->eloquentMacro());
         }
 
         if ($this->app->runningInConsole()) {
@@ -48,24 +53,54 @@ class CacheQueryServiceProvider extends ServiceProvider
     }
 
     /**
-     * Creates a macro for the query builders.
+     * Creates a macro for the base Query Builder.
      *
      * @return \Closure
      */
     protected function macro(): Closure
     {
         return function (
-            int|DateTimeInterface|DateInterval $ttl = 60,
+            DateTimeInterface|DateInterval|int $ttl = 60,
             string $key = '',
             string $store = null,
             int $wait = 0,
         ): Builder {
             /** @var \Illuminate\Database\Query\Builder $this */
+
+            // Avoid re-wrapping the connection into another proxy.
             if ($this->connection instanceof CacheAwareConnectionProxy) {
                 $this->connection = $this->connection->connection;
             }
 
-            $this->connection = CacheAwareConnectionProxy::crateNewInstance($this->connection, $ttl, $key, $wait, $store);
+            $this->connection = CacheAwareConnectionProxy::crateNewInstance(
+                $this->connection, $ttl, $key, $wait, $store
+            );
+
+            return $this;
+        };
+    }
+
+    /**
+     * Creates a macro for the base Query Builder.
+     *
+     * @return \Closure
+     */
+    protected function eloquentMacro(): Closure
+    {
+        return function (
+            int|DateTimeInterface|DateInterval $ttl = 60,
+            string $key = '',
+            string $store = null,
+            int $wait = 0
+        ): EloquentBuilder {
+            /** @var \Illuminate\Database\Eloquent\Builder $this */
+            $this->getQuery()->cache($ttl, $key, $store, $wait);
+
+            // This global scope is responsible for caching eager loaded relations.
+            $this->withGlobalScope(
+                Scopes\AddCacheToRelations::class,
+                new Scopes\AddCacheToRelations($ttl, $key, $store, $wait)
+            );
 
             return $this;
         };

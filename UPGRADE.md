@@ -1,5 +1,13 @@
 # Upgrading
 
+## From 2.x
+
+### Cache keys
+
+Cache keys are now exclusively to delete one or multiple queries, like tags. Multiple queries using the same key will yield different results, as these will not share the same cache key anymore.
+
+If you need to keep the same functionality, use your application Cache directly.
+
 ## From 1.x
 
 ### Idempotent queries
