@@ -4,6 +4,7 @@ namespace Tests;
 
 use Illuminate\Contracts\Cache\Factory;
 use Illuminate\Contracts\Cache\Repository;
+use Illuminate\Support\Collection;
 use Laragear\CacheQuery\Facades\CacheQuery;
 
 class CacheQueryTest extends TestCase
@@ -28,8 +29,17 @@ class CacheQueryTest extends TestCase
     public function test_uses_given_store(): void
     {
         $repository = $this->mock(Repository::class);
-        $repository->expects('get')->with('cache-query|foo', [])->andReturn(['bar', 'baz']);
-        $repository->expects('deleteMultiple')->with(['cache-query|foo', 'bar', 'baz'])->andReturnTrue();
+        $repository
+            ->expects('getMultiple')
+            ->with(['cache-query|foo'])
+            ->andReturn(['cache-query|foo' => ['bar', 'baz']]);
+        $repository->expects('deleteMultiple')
+            ->withArgs(function (Collection $queries): bool {
+                static::assertSame(['bar', 'baz', 'cache-query|foo'], $queries->all());
+
+                return true;
+            })
+            ->andReturnTrue();
 
         $this->mock(Factory::class)->allows('store')->with('foo')->andReturn($repository);
 
