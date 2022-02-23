@@ -13,8 +13,8 @@
         }
     ],
     "support": {
-        "source": "https://github.com/laragear/cache-query",
-        "issues": "https://github.com/laragear/cache-query/issues"
+        "source": "https://github.com/Laragear/CacheQuery",
+        "issues": "https://github.com/Laragear/CacheQuery/issues"
     },
     "require": {
         "php": "^8.0.2",
