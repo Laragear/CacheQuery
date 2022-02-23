@@ -80,6 +80,17 @@ use App\Models\Article;
 Article::latest('published_at')->take(10)->cache(false)->get();
 ```
 
+Finally, you can bypass the cache entirely using the query builder `when()` and `unless()` methods easily, as these are totally compatible with the `cache()` method.
+
+```php
+use App\Models\Article;
+
+Article::latest('published_at')->whereBelongsTo($user)->take(10)->unless(Auth::check(), function ($articles) {
+    // If the user is a guest, use the cache to show the latest articles of the given user.
+    $articles->cache();
+})->get();
+```
+
 ### Custom Cache Store
 
 You can use any other Cache Store different from the application default by setting a third parameter, or a named parameter.
