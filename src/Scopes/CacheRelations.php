@@ -4,7 +4,6 @@ namespace Laragear\CacheQuery\Scopes;
 
 use DateInterval;
 use DateTimeInterface;
-use Illuminate\Contracts\Database\Eloquent\Builder as EloquentBuilderContract;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Scope;
@@ -34,7 +33,7 @@ class CacheRelations implements Scope
         $eager = $builder->getEagerLoads();
 
         foreach ($eager as $key => $callback) {
-            $eager[$key] = function (EloquentBuilderContract $eloquent) use ($callback, $builder): void {
+            $eager[$key] = function ($eloquent) use ($callback, $builder): void {
                 $callback($eloquent);
 
                 // Always override the previous eloquent builder with the base cache parameters.

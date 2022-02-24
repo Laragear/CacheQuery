@@ -53,15 +53,14 @@ class CacheAwareConnectionProxyTest extends TestCase
     protected function defineDatabaseMigrations(): void
     {
         $this->loadLaravelMigrations();
-
-        $this->app->make('db.schema')->create('posts', static function (Blueprint $table): void {
+        $this->app->make('db')->getSchemaBuilder()->create('posts', static function (Blueprint $table): void {
             $table->id();
             $table->string('title');
             $table->foreignIdFor(User::class);
             $table->timestamps();
         });
 
-        $this->app->make('db.schema')->create('comments', static function (Blueprint $table): void {
+        $this->app->make('db')->getSchemaBuilder()->create('comments', static function (Blueprint $table): void {
             $table->id();
             $table->integer('likes')->default(0);
             $table->string('body');
