@@ -1,5 +1,5 @@
 {
-    "name": "laragear/query-cache",
+    "name": "laragear/cache-query",
     "description": "Remember your query results using only one method. Yes, only one.",
     "type": "library",
     "license": "MIT",
@@ -13,8 +13,8 @@
         }
     ],
     "support": {
-        "source": "https://github.com/laragear/query-cache",
-        "issues": "https://github.com/laragear/query-cache/issues"
+        "source": "https://github.com/laragear/cache-query",
+        "issues": "https://github.com/laragear/cache-query/issues"
     },
     "require": {
         "php": "^8.0.2",

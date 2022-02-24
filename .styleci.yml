@@ -1,0 +1,9 @@
+preset: laravel
+version: 8.1
+
+finder:
+  exclude:
+    - ".assets"
+    - ".github"
+    - ".stubs"
+    - "config"

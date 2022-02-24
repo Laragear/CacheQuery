@@ -1,7 +1,6 @@
 <?php
 
-namespace Illuminate\Database\Query
-{
+namespace Illuminate\Database\Query {
 
     use DateInterval;
     use DateTimeInterface;
@@ -9,23 +8,26 @@ namespace Illuminate\Database\Query
     class Builder
     {
         /**
-         * Caches the underlying builder results.
+         * Caches the underlying query results.
          *
-         * @param  int|\DateTimeInterface|\DateInterval  $ttl
+         * @param  \DateTimeInterface|\DateInterval|int|bool|null  $ttl
          * @param  string  $key
          * @param  string|null  $store
          * @param  int  $wait
-         * @return $this
+         * @return static
          */
-        public function cache(int|DateTimeInterface|DateInterval $ttl = 60, string $key = '', string $store = null, int $wait = 0): static
-        {
+        public function cache(
+            DateTimeInterface|DateInterval|int|bool|null $ttl = null,
+            string $key = '',
+            string $store = null,
+            int $wait = 0,
+        ): static {
             //
         }
     }
 }
 
-namespace Illuminate\Database\Eloquent
-{
+namespace Illuminate\Database\Eloquent {
 
     use DateInterval;
     use DateTimeInterface;
@@ -33,16 +35,20 @@ namespace Illuminate\Database\Eloquent
     class Builder
     {
         /**
-         * Caches the underlying builder results.
+         * Caches the underlying query results.
          *
-         * @param  int|\DateTimeInterface|\DateInterval  $ttl
+         * @param  \DateTimeInterface|\DateInterval|int|bool|null  $ttl
          * @param  string  $key
          * @param  string|null  $store
          * @param  int  $wait
-         * @return \Illuminate\Database\Query\Builder
+         * @return static
          */
-        public function cache(int|DateTimeInterface|DateInterval $ttl = 60, string $key = '', string $store = null, int $wait = 0): static
-        {
+        public function cache(
+            DateTimeInterface|DateInterval|int|bool|null $ttl = null,
+            string $key = '',
+            string $store = null,
+            int $wait = 0,
+        ): static {
             //
         }
     }
