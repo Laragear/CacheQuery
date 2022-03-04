@@ -14,10 +14,10 @@ class CacheRelations implements Scope
     /**
      * Creates a new scope instance.
      *
-     * @param  \DateTimeInterface|\DateInterval|integer|null  $ttl
+     * @param  \DateTimeInterface|\DateInterval|int|null  $ttl
      * @param  string  $key
      * @param  string|null  $store
-     * @param  integer  $wait
+     * @param  int  $wait
      */
     public function __construct(
         protected DateTimeInterface|DateInterval|int|null $ttl,
