@@ -35,8 +35,8 @@ class CacheQueryTest extends TestCase
             ->andReturn([
                 'cache-query|foo' => [
                     'list' => ['cache-query|bar', 'cache-query|baz'],
-                    'expires_at' => 'never'
-                ]
+                    'expires_at' => 'never',
+                ],
             ]);
         $repository->expects('deleteMultiple')
             ->withArgs(function (Collection $queries): bool {
