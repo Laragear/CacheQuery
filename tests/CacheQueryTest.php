@@ -12,7 +12,7 @@ class CacheQueryTest extends TestCase
     public function test_forgets_result(): void
     {
         $this->app->make('cache')->putMany([
-            'cache-query|foo' => ['cache-query|bar', 'cache-query|baz'],
+            'cache-query|foo' => ['list' => ['cache-query|bar', 'cache-query|baz'], 'expires_at' => 'never'],
             'cache-query|bar' => true,
             'cache-query|baz' => true,
         ]);
@@ -32,10 +32,15 @@ class CacheQueryTest extends TestCase
         $repository
             ->expects('getMultiple')
             ->with(['cache-query|foo'])
-            ->andReturn(['cache-query|foo' => ['bar', 'baz']]);
+            ->andReturn([
+                'cache-query|foo' => [
+                    'list' => ['cache-query|bar', 'cache-query|baz'],
+                    'expires_at' => 'never'
+                ]
+            ]);
         $repository->expects('deleteMultiple')
             ->withArgs(function (Collection $queries): bool {
-                static::assertSame(['bar', 'baz', 'cache-query|foo'], $queries->all());
+                static::assertSame(['cache-query|bar', 'cache-query|baz', 'cache-query|foo'], $queries->all());
 
                 return true;
             })
