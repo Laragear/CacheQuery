@@ -87,12 +87,9 @@ class CacheQuery
      */
     protected function getQueries(array $keys): Collection
     {
-        return Collection::make($this->repository()->getMultiple($this->addPrefix($keys)))
-            ->map(static function (?array $queries, string $key): array {
-                $queries[] = $key;
+        $keys = $this->addPrefix($keys);
 
-                return $queries;
-            })
-            ->flatten(1);
+        // Merging the keys last allows us to ensure the parent keys are deleted last.
+        return Collection::make($this->repository()->getMultiple($keys))->filter()->flatMap->list->merge($keys);
     }
 }
