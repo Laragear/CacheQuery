@@ -118,7 +118,12 @@ class CacheAwareConnectionProxy
      */
     protected function getQueryHash(string $query, array $bindings): string
     {
-        return rtrim(base64_encode(md5($this->connection->getDatabaseName().$query.implode('', $bindings), true)), '=');
+        $query = str_split($query);
+        
+        sort($query);
+        sort($bindings);
+
+        return rtrim(base64_encode(md5($this->connection->getDatabaseName().implode($query).implode($bindings), true)), '=');
     }
 
     /**
