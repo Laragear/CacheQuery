@@ -119,7 +119,7 @@ class CacheAwareConnectionProxy
     protected function getQueryHash(string $query, array $bindings): string
     {
         $query = str_split($query);
-        
+
         sort($query);
         sort($bindings);
 
