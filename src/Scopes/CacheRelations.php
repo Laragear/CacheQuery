@@ -11,6 +11,14 @@ use Illuminate\Database\Eloquent\Scope;
 
 class CacheRelations implements Scope
 {
+    /**
+     * Creates a new scope instance.
+     *
+     * @param  \DateTimeInterface|\DateInterval|int|null  $ttl
+     * @param  string  $key
+     * @param  string|null  $store
+     * @param  int  $wait
+     */
     public function __construct(
         protected DateTimeInterface|DateInterval|int|null $ttl,
         protected string $key,
@@ -29,8 +37,9 @@ class CacheRelations implements Scope
      */
     public function apply(Builder $builder, Model $model): void
     {
-        // Since scopes are applied last, we can safely wrap eager loaded relations
-        // with a cache, but using a custom cache key for each of these.
+        // Since scopes are applied last, we can safely wrap the eager loaded relations
+        // with a cache, but using a custom cache key for each of these, allowing the
+        // next relationships to respect the callback and include this cache scope.
         $eager = $builder->getEagerLoads();
 
         foreach ($eager as $key => $callback) {
