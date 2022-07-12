@@ -123,7 +123,9 @@ class CacheAwareConnectionProxy
         sort($query);
         sort($bindings);
 
-        return rtrim(base64_encode(md5($this->connection->getDatabaseName().implode($query).implode($bindings), true)), '=');
+        $query = implode($query);
+
+        return rtrim(base64_encode(md5($this->connection->getDatabaseName().$query.implode('', $bindings), true)), '=');
     }
 
     /**
