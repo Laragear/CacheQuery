@@ -34,7 +34,7 @@ class CacheAwareConnectionProxy
      * @param  string  $computedKey
      * @param  string  $queryKeySuffix
      */
-    public function __construct(
+    final public function __construct(
         public ConnectionInterface $connection,
         protected Repository $repository,
         protected DateTimeInterface|DateInterval|int|null $ttl,
