@@ -270,7 +270,7 @@ class CacheAwareConnectionProxyTest extends TestCase
 
     public function test_uses_custom_time_to_live(): void
     {
-        $hash = 'cache-query|30250dGAv64n2ySOIxuL+g';
+        $hash = 'cache-query|NFHJ7sxlmmVX5SBpN7vQZQ';
 
         $seconds = 120;
         $now = now()->addMinute();
@@ -309,7 +309,7 @@ class CacheAwareConnectionProxyTest extends TestCase
 
     public function test_locks_cache_when_waiting(): void
     {
-        $hash = 'cache-query|30250dGAv64n2ySOIxuL+g';
+        $hash = 'cache-query|NFHJ7sxlmmVX5SBpN7vQZQ';
 
         $lock = $this->mock(Lock::class);
         $lock->expects('block')->withArgs(function ($time, $callback): bool {
@@ -488,7 +488,10 @@ class CacheAwareConnectionProxyTest extends TestCase
 
         static::assertSame(
             [
-                'list' => ['cache-query|O18ompNwDpTOa5rNZczCSw', 'cache-query|O18ompNwDpTOa5rNZczCSw.NF0RBjEJ/bDl95d8ryoKeg'],
+                'list' => [
+                    'cache-query|t7xNx2XYBgQ4UUVwlOKQnQ', 
+                    'cache-query|t7xNx2XYBgQ4UUVwlOKQnQ.JAZ9AnVZjpN6AXd2QUhAvw'
+                ],
                 'expires_at' => 'never',
             ],
             $this->app->make('cache')->get('cache-query|foo')
@@ -503,7 +506,10 @@ class CacheAwareConnectionProxyTest extends TestCase
 
         static::assertSame(
             [
-                'list' => ['cache-query|O18ompNwDpTOa5rNZczCSw', 'cache-query|O18ompNwDpTOa5rNZczCSw.NF0RBjEJ/bDl95d8ryoKeg'],
+                'list' => [
+                    'cache-query|t7xNx2XYBgQ4UUVwlOKQnQ',
+                    'cache-query|t7xNx2XYBgQ4UUVwlOKQnQ.JAZ9AnVZjpN6AXd2QUhAvw'
+                ],
                 'expires_at' => 'never',
             ],
             $this->app->make('cache')->get('cache-query|foo')
@@ -543,9 +549,9 @@ class CacheAwareConnectionProxyTest extends TestCase
         static::assertSame(
             [
                 'list' => [
-                    'cache-query|O18ompNwDpTOa5rNZczCSw',
-                    'cache-query|O18ompNwDpTOa5rNZczCSw.NF0RBjEJ/bDl95d8ryoKeg',
-                    'cache-query|O18ompNwDpTOa5rNZczCSw.NF0RBjEJ/bDl95d8ryoKeg.ULZsLi343YS0xbuO0VteEA',
+                    'cache-query|t7xNx2XYBgQ4UUVwlOKQnQ',
+                    'cache-query|t7xNx2XYBgQ4UUVwlOKQnQ.JAZ9AnVZjpN6AXd2QUhAvw',
+                    'cache-query|t7xNx2XYBgQ4UUVwlOKQnQ.JAZ9AnVZjpN6AXd2QUhAvw.zx2YbE32Ulj93CK8p+F9Zg',
                 ],
                 'expires_at' => 'never',
             ],
@@ -562,8 +568,8 @@ class CacheAwareConnectionProxyTest extends TestCase
         static::assertSame(
             [
                 'list' => [
-                    'cache-query|NF0RBjEJ/bDl95d8ryoKeg',
-                    'cache-query|NF0RBjEJ/bDl95d8ryoKeg.ULZsLi343YS0xbuO0VteEA',
+                    'cache-query|JAZ9AnVZjpN6AXd2QUhAvw',
+                    'cache-query|JAZ9AnVZjpN6AXd2QUhAvw.zx2YbE32Ulj93CK8p+F9Zg',
                 ],
                 'expires_at' => 'never',
             ],
