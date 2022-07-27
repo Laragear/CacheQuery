@@ -72,6 +72,7 @@ class CacheQueryServiceProvider extends ServiceProvider
                 $this->connection = $this->connection->connection;
             }
 
+            // @phpstan-ignore-next-line
             $this->connection = CacheAwareConnectionProxy::crateNewInstance(
                 $this->connection, $ttl === false ? -1 : $ttl, $key, $wait, $store
             );
@@ -93,7 +94,10 @@ class CacheQueryServiceProvider extends ServiceProvider
             string $store = null,
             int $wait = 0,
         ): EloquentBuilder {
-            /** @var \Illuminate\Database\Eloquent\Builder $this */
+            /** 
+             * @var \Illuminate\Database\Eloquent\Builder $this
+             * @phpstan-ignore-next-line
+             */
             $this->getQuery()->cache($ttl, $key, $store, $wait);
 
             // This global scope is responsible for caching eager loaded relations.

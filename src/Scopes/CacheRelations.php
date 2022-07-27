@@ -47,8 +47,10 @@ class CacheRelations implements Scope
                 $callback($eloquent);
 
                 // Always override the previous eloquent builder with the base cache parameters.
+                // @phpstan-ignore-next-line
                 $eloquent->cache($this->ttl, $this->key, $this->store, $this->wait);
 
+                // @phpstan-ignore-next-line
                 $eloquent->getConnection()->queryKeySuffix = $builder->getConnection()->computedKey;
             };
         }
