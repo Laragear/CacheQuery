@@ -489,8 +489,8 @@ class CacheAwareConnectionProxyTest extends TestCase
         static::assertSame(
             [
                 'list' => [
-                    'cache-query|t7xNx2XYBgQ4UUVwlOKQnQ', 
-                    'cache-query|t7xNx2XYBgQ4UUVwlOKQnQ.JAZ9AnVZjpN6AXd2QUhAvw'
+                    'cache-query|t7xNx2XYBgQ4UUVwlOKQnQ',
+                    'cache-query|t7xNx2XYBgQ4UUVwlOKQnQ.JAZ9AnVZjpN6AXd2QUhAvw',
                 ],
                 'expires_at' => 'never',
             ],
@@ -508,7 +508,7 @@ class CacheAwareConnectionProxyTest extends TestCase
             [
                 'list' => [
                     'cache-query|t7xNx2XYBgQ4UUVwlOKQnQ',
-                    'cache-query|t7xNx2XYBgQ4UUVwlOKQnQ.JAZ9AnVZjpN6AXd2QUhAvw'
+                    'cache-query|t7xNx2XYBgQ4UUVwlOKQnQ.JAZ9AnVZjpN6AXd2QUhAvw',
                 ],
                 'expires_at' => 'never',
             ],
