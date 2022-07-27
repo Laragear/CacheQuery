@@ -27,3 +27,7 @@ cache()->remember('idempotent', function () {
 ### Query Hash
 
 If for some reason you where using the query hashes, 2.x incorporates the connection name into the hash.
+
+## From 2.x or 3.x
+
+## Operations are now 

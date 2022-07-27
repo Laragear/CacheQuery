@@ -9,7 +9,7 @@ Articles::latest('published_at')->cache()->take(10)->get();
 
 ## Keep this package free
 
-[![](.assets/patreon.png)](https://patreon.com/packagesforlaravel)[![](.assets/ko-fi.png)](https://ko-fi.com/DarkGhostHunter)[![](.assets/buymeacoffee.png)](https://www.buymeacoffee.com/darkghosthunter)[![](.assets/paypal.png)](https://www.paypal.com/paypalme/darkghosthunter)
+[![](.github/assets/patreon.png)](https://patreon.com/packagesforlaravel)[![](.github/assets/ko-fi.png)](https://ko-fi.com/DarkGhostHunter)[![](.github/assets/buymeacoffee.png)](https://www.buymeacoffee.com/darkghosthunter)[![](.github/assets/paypal.png)](https://www.paypal.com/paypalme/darkghosthunter)
 
 Your support allows me to keep this package free, up-to-date and maintainable. Alternatively, you can **[spread the word!](http://twitter.com/share?text=I%20am%20using%20this%20cool%20PHP%20package&url=https://github.com%2FLaragear%2FCacheQuery&hashtags=PHP,Laravel)**
 
@@ -39,9 +39,9 @@ DB::table('articles')->latest('published_at')->take(10)->cache()->get();
 Article::latest('published_at')->take(10)->cache()->get();
 ```
 
-The next time you call the **same** query, the result will be retrieved from the cache instead of running the `SELECT` SQL statement in the database, even if the results are empty, `null` or `false`. 
+The next time you call the same query, the result will be retrieved from the cache instead of running the `SELECT` SQL statement in the database, even if the results are empty, `null` or `false`. 
 
-It's **eager load aware**. This means that it will cache an eager loaded relation automatically.
+It's **eager load aware**. This means that it will cache an eager loaded relation automatically, even its children.
 
 ```php
 use App\Models\User;
@@ -59,12 +59,12 @@ You're free to use any number of seconds from now, or just a Carbon instance.
 use Illuminate\Support\Facades\DB;
 use App\Models\Article;
 
-DB::table('articles')->latest('published_at')->take(10)->cache(120)->get();
+DB::table('articles')->latest('published_at')->take(10)->cache(60 * 60)->get();
 
 Article::latest('published_at')->take(10)->cache(now()->addHour())->get();
 ```
 
-You can also use `null` to set the query results forever.
+You can also use `null` to set the query results forever in the cache.
 
 ```php
 use App\Models\Article;
@@ -72,12 +72,14 @@ use App\Models\Article;
 Article::latest('published_at')->take(10)->cache(null)->get();
 ```
 
-Sometimes you may want to regenerate the results programmatically. To do that, set the time as `false`. This will repopulate the cache with the new results, even if these were not cached before.
+You may also want the ability to regenerate the results programmatically. To do that, set the time as `false`. This will _refresh_ the cache with the result, even if it was already cached before.
 
 ```php
 use App\Models\Article;
 
-Article::latest('published_at')->take(10)->cache(false)->get();
+Article::latest('published_at')->take(10)->cache(
+    $user->isAdmin() ? false : 60 * 120
+)->get();
 ```
 
 Finally, you can bypass the cache entirely using the query builder `when()` and `unless()` methods easily, as these are totally compatible with the `cache()` method.
@@ -85,10 +87,13 @@ Finally, you can bypass the cache entirely using the query builder `when()` and 
 ```php
 use App\Models\Article;
 
-Article::latest('published_at')->whereBelongsTo($user)->take(10)->unless(Auth::check(), function ($articles) {
-    // If the user is a guest, use the cache to show the latest articles of the given user.
-    $articles->cache();
-})->get();
+Article::latest('published_at')
+       ->whereBelongsTo($user)
+       ->take(10)
+       ->when(Auth::guest(), function ($articles) {
+            // If the user is a guest, use the cache to show the latest articles of the given user.
+            $articles->cache();
+        })->get();
 ```
 
 ### Custom Cache Store
@@ -99,6 +104,12 @@ You can use any other Cache Store different from the application default by sett
 use App\Models\Article;
 
 Article::latest('published_at')->take(10)->cache(store: 'redis')->get();
+```
+
+Or, you can just [change the default](#cache-store):
+
+```dotenv
+CACHE_QUERY_STORE=redis
 ```
 
 ### Cache Lock (data races)
@@ -113,11 +124,11 @@ Article::latest('published_at')->take(200)->cache(wait: 5)->get();
 
 The first process will acquire the lock for the given seconds and execute the query. The next processes will wait the same amount of seconds until the first process stores the result in the cache to retrieve it. If the first process takes too much, the second will try again.
 
-> If you need a more advanced locking mechanism, use the [cache lock](https://laravel.com/docs/cache#managing-locks-across-processes) directly.
+> **Note** If you need a more advanced locking mechanism, use the [cache lock](https://laravel.com/docs/cache#managing-locks-across-processes) directly.
 
 ## Forgetting results with a key
 
-Cache keys are used to identify multiple queries cached with an identifiable name. These are not mandatory, but if you expect to remove a query from the cache, you will need to identify the query with the `key` argument. 
+This package generates cache keys using the BASE64-encoded MD5 hashes of the executed query. If you expect to remove a query from the cache, you will need to identify the query with the `key` argument. 
 
 ```php
 use App\Models\Article;
@@ -133,7 +144,7 @@ use Laragear\CacheQuery\Facades\CacheQuery;
 CacheQuery::forget('latest_articles');
 ```
 
-Or you may use the `cache-query:forget` command with the name of the key from the CLI.
+Or, you may use the `cache-query:forget` command with the name of the key from the CLI.
 
 ```shell
 php artisan cache-query:forget latest_articles
@@ -154,7 +165,7 @@ Post::latest('posted_at')->take(10)->cache(key: 'latest_articles')->get();
 CacheQuery::forget('latest_articles');
 ```
 
-> This functionality does not use cache tags, so it will work on any cache store you set, even the `file` driver!
+> **Note** This functionality does not use cache tags, so it will work on any cache store you set, even the `file` driver!
 
 ## Configuration
 
@@ -201,37 +212,6 @@ return  [
 
 When storing query hashes and query named keys, this prefix will be appended, which will avoid conflicts with other cached keys. You can change in case it collides with other keys.
 
-## Caveats
-
-This cache package does some clever things to always retrieve the data from the cache, or populate it with the results, in an opaque way and using just one method, but this world is far from perfect.
-
-### Operations are **NOT** commutative
-
-Altering the Builder methods order will change the auto-generated cache key. Even if two or more queries are _visually_ the same, the order of statements makes the hash completely different.
-
-For example, given two similar queries in different parts of the application, these both will **not** share the same cached result:
-
-```php
-User::query()->cache()->whereName('Joe')->whereAge(20)->first();
-// Cache key: "cache-query|/XreUO1yaZ4BzH2W6LtBSA=="
-
-User::query()->cache()->whereAge(20)->whereName('Joe')->first();
-// Cache key: "cache-query|muDJevbVppCsTFcdeZBxsA=="
-```
-
-To avoid this, ensure you always execute the same query, like centralizing the query somewhere in your application.
-
-### Cannot delete autogenerated keys
-
-All queries are cached using a BASE64 encoded MD5 hash of the connection name, SQL query and its bindings. This avoids any collision with other queries or different databases, while keeping the cache key shorter than the raw query for a faster lookup in the cache store.
-
-```php
-User::query()->cache()->whereAge(20)->whereName('Joe')->first();
-// Cache key: "cache-query|muDJevbVppCsTFcdeZBxsA=="
-```
-
-This makes extremely difficult to remove keys from the cache. If you need to invalidate or regenerate the cached results, [use a custom key](#forgetting-results-with-a-key).
-
 ## PhpStorm stubs
 
 For users of PhpStorm, there is a stub file to aid in macro autocompletion for this package. You can publish them using the `phpstorm` tag:
@@ -246,7 +226,7 @@ The file gets published into the `.stubs` folder of your project. You should poi
 
 When you use `cache()`, it will wrap the connection into a proxy object. It proxies all method calls to it except `select()` and `selectOne()`.
 
-Once a `SELECT` statement is executed through the aforementioned methods, it will check if the results are in the cache before executing the query. On cache hit, it will return the cached results, otherwise it will continue execution, save the results using the cache configuration, and return them.
+Once a `SELECT` statement is executed through the aforementioned methods, it will check if the results are in the cache before executing the query. On cache hit, it will return the cached results, even if these are empty, otherwise it will continue execution, save the incoming results into the cache, and return them as normal.
 
 ## Laravel Octane compatibility
 
