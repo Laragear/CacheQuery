@@ -94,7 +94,7 @@ class CacheQueryServiceProvider extends ServiceProvider
             string $store = null,
             int $wait = 0,
         ): EloquentBuilder {
-            /** 
+            /**
              * @var \Illuminate\Database\Eloquent\Builder $this
              * @phpstan-ignore-next-line
              */
