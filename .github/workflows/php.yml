@@ -5,7 +5,7 @@ name: Tests
 on:
   push:
     branches:
-      - "2.x"
+      - "master" ## TODO: change the branch before the PR.
   pull_request:
 
 jobs:
