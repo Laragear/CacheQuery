@@ -90,6 +90,7 @@ class CacheQuery
         $keys = $this->addPrefix($keys);
 
         // Merging the keys last allows us to ensure the parent keys are deleted last.
+        // @phpstan-ignore-next-line
         return Collection::make($this->repository()->getMultiple($keys))->filter()->flatMap->list->merge($keys);
     }
 }

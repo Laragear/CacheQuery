@@ -2,10 +2,10 @@
 
 namespace Laragear\CacheQuery\Console\Commands\CacheQuery;
 
-use function array_map;
-use function explode;
 use Illuminate\Console\Command;
 use Laragear\CacheQuery\CacheQuery;
+use function array_map;
+use function explode;
 
 class Forget extends Command
 {
@@ -42,7 +42,7 @@ class Forget extends Command
     {
         $store = $this->option('store') ?: config('cache-query.store') ?? cache()->getDefaultDriver();
 
-        $keys = array_map('trim', explode(',', $this->argument('keys')) ?: []);
+        $keys = array_map('trim', explode(',', $this->argument('keys')));
 
         $count = count($keys);
 
