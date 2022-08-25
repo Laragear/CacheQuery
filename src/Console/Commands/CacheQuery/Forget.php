@@ -2,10 +2,10 @@
 
 namespace Laragear\CacheQuery\Console\Commands\CacheQuery;
 
-use Illuminate\Console\Command;
-use Laragear\CacheQuery\CacheQuery;
 use function array_map;
 use function explode;
+use Illuminate\Console\Command;
+use Laragear\CacheQuery\CacheQuery;
 
 class Forget extends Command
 {
