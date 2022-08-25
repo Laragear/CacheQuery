@@ -42,7 +42,7 @@ class Forget extends Command
     {
         $store = $this->option('store') ?: config('cache-query.store') ?? cache()->getDefaultDriver();
 
-        $keys = array_map('trim', explode(',', $this->argument('keys')) ?: []);
+        $keys = array_map('trim', explode(',', $this->argument('keys')));
 
         $count = count($keys);
 

@@ -133,6 +133,7 @@ class CacheAwareConnectionProxy
             return new NoLock($key, $this->lockWait);
         }
 
+        // @phpstan-ignore-next-line
         return $this->repository->getStore()->lock($key, $this->lockWait);
     }
 
@@ -254,6 +255,7 @@ class CacheAwareConnectionProxy
         int $wait,
         ?string $store,
     ): static {
+        // @phpstan-ignore-next-line
         return new static(
             $connection,
             static::store($store, (bool) $wait),
