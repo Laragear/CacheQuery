@@ -72,7 +72,6 @@ class CacheQueryServiceProvider extends ServiceProvider
                 $this->connection = $this->connection->connection;
             }
 
-            // @phpstan-ignore-next-line
             $this->connection = CacheAwareConnectionProxy::crateNewInstance(
                 $this->connection, $ttl === false ? -1 : $ttl, $key, $wait, $store
             );
