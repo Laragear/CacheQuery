@@ -96,6 +96,7 @@ class CacheQueryServiceProvider extends ServiceProvider
         ): EloquentBuilder {
             /**
              * @var \Illuminate\Database\Eloquent\Builder $this
+             *
              * @phpstan-ignore-next-line
              */
             $this->getQuery()->cache($ttl, $key, $store, $wait);
