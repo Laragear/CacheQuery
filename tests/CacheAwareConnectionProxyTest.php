@@ -268,6 +268,35 @@ class CacheAwareConnectionProxyTest extends TestCase
         static::assertSame(2, $second->firstItem());
     }
 
+    public function test_caches_pagination_with_group_by(): void
+    {
+        User::query()->delete();
+
+        foreach (['first@bogus.com', 'second@bogus.com'] as $email) {
+            User::forceCreate([
+                'email' => $email,
+                'name' => 'foo',
+                'password' => 'password',
+                'email_verified_at' => today(),
+            ]);
+        }
+
+        User::query()->cache()->groupBy('name')->paginate(perPage: 1, page: 1);
+        User::query()->cache()->groupBy('name')->paginate(perPage: 1, page: 2);
+
+        User::query()->delete();
+
+        $this->assertDatabaseEmpty('users');
+
+        $first = User::query()->cache()->groupBy('name')->paginate(perPage: 1, page: 1);
+        $second = User::query()->cache()->groupBy('name')->paginate(perPage: 1, page: 2);
+
+        static::assertCount(1, $first->items());
+        static::assertSame(1, $first->total());
+        static::assertSame(1, $first->firstItem());
+        static::assertEmpty($second);
+    }
+
     public function test_uses_custom_time_to_live(): void
     {
         $hash = 'cache-query|30250dGAv64n2ySOIxuL+g';
@@ -622,12 +651,11 @@ class CacheAwareConnectionProxyTest extends TestCase
 
     public function test_pass_through_methods_to_wrapped_connection(): void
     {
-        $this->app->make('db')->table('users')->cache()->getConnection()->setDatabaseName('foo');
+        $connection = $this->app->make('db')->table('users')->cache()->getConnection();
 
-        static::assertSame(
-            'foo',
-            $this->app->make('db')->table('users')->cache()->getConnection()->getDatabaseName('foo')
-        );
+        $connection->setDatabaseName('foo');
+
+        static::assertSame('foo', $connection->getDatabaseName());
     }
 
     public function test_pass_through_properties_set_and_get(): void
