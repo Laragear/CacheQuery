@@ -2,25 +2,26 @@
 
 namespace Laragear\CacheQuery;
 
-use function array_shift;
-use function base64_encode;
-use function cache;
-use function config;
 use DateInterval;
 use DateTimeInterface;
 use Illuminate\Cache\NoLock;
 use Illuminate\Contracts\Cache\Lock;
 use Illuminate\Contracts\Cache\LockProvider;
 use Illuminate\Contracts\Cache\Repository;
+use Illuminate\Database\Connection;
 use Illuminate\Database\ConnectionInterface;
+use LogicException;
+use function array_shift;
+use function base64_encode;
+use function cache;
+use function config;
 use function implode;
 use function is_int;
-use LogicException;
 use function max;
 use function md5;
 use function rtrim;
 
-class CacheAwareConnectionProxy
+class CacheAwareConnectionProxy extends Connection
 {
     /**
      * Create a new Cache Aware Connection Proxy instance.
@@ -229,13 +230,13 @@ class CacheAwareConnectionProxy
     /**
      * Pass-through all method calls to the underlying connection.
      *
-     * @param  string  $name
+     * @param  string  $method
      * @param  array  $arguments
      * @return mixed
      */
-    public function __call(string $name, array $arguments)
+    public function __call($method, $arguments)
     {
-        return $this->connection->{$name}(...$arguments);
+        return $this->connection->{$method}(...$arguments);
     }
 
     /**
