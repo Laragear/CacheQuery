@@ -15,7 +15,7 @@ use Illuminate\Support\ServiceProvider;
 class CacheQueryServiceProvider extends ServiceProvider
 {
     public const CONFIG = __DIR__.'/../config/cache-query.php';
-    public const STUBS = __DIR__.'/../.stubs/stubs.php';
+    public const STUBS = __DIR__.'/../.stubs/stubs';
 
     /**
      * Register the service provider.
