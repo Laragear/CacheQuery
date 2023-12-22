@@ -17,7 +17,6 @@ use Illuminate\Support\Collection;
 use Laragear\CacheQuery\CacheAwareConnectionProxy;
 use LogicException;
 use Mockery;
-
 use function now;
 use function today;
 
@@ -388,15 +387,15 @@ class CacheAwareConnectionProxyTest extends TestCase
 
     public function test_largest_ttl_key_takes_precedence(): void
     {
-        $this->travelTo(now());
+        $this->travelTo(now()->startOfSecond());
 
         $this->app->make('db')->table('users')->where('id', 1)->cache(ttl: 120, key: 'foo')->first();
         $this->app->make('db')->table('users')->where('id', 1)->cache(ttl: 30, key: 'foo')->first();
 
-        $this->app->make('db')->table('users')->where('id', 2)->cache(ttl: now()->addMinutes(2), key: 'bar')->first();
+        $this->app->make('db')->table('users')->where('id', 2)->cache(ttl: now()->addSeconds(120), key: 'bar')->first();
         $this->app->make('db')->table('users')->where('id', 2)->cache(ttl: now()->addSeconds(30), key: 'bar')->first();
 
-        $this->app->make('db')->table('users')->where('id', 3)->cache(ttl: now()->addMinutes(2)->diffAsCarbonInterval(), key: 'baz')->first();
+        $this->app->make('db')->table('users')->where('id', 3)->cache(ttl: now()->addSeconds(120)->diffAsCarbonInterval(), key: 'baz')->first();
         $this->app->make('db')->table('users')->where('id', 3)->cache(ttl: now()->addSeconds(30)->diffAsCarbonInterval(), key: 'baz')->first();
 
         $this->app->make('db')->table('users')->where('id', 4)->cache(ttl: null, key: 'quz')->first();
@@ -409,14 +408,14 @@ class CacheAwareConnectionProxyTest extends TestCase
         static::assertTrue($this->app->make('cache')->has('cache-query|baz'));
         static::assertTrue($this->app->make('cache')->has('cache-query|quz'));
 
-        $this->travelTo(now()->addMinute());
+        $this->travelTo(now()->addMinute()->subSecond());
 
         static::assertTrue($this->app->make('cache')->has('cache-query|foo'));
         static::assertTrue($this->app->make('cache')->has('cache-query|bar'));
         static::assertTrue($this->app->make('cache')->has('cache-query|baz'));
         static::assertTrue($this->app->make('cache')->has('cache-query|quz'));
 
-        $this->travelTo(now()->addSecond());
+        $this->travelTo(now()->addSeconds(2));
 
         static::assertFalse($this->app->make('cache')->has('cache-query|foo'));
         static::assertFalse($this->app->make('cache')->has('cache-query|bar'));
