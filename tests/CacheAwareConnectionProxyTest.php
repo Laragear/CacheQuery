@@ -17,6 +17,7 @@ use Illuminate\Support\Collection;
 use Laragear\CacheQuery\CacheAwareConnectionProxy;
 use LogicException;
 use Mockery;
+
 use function now;
 use function today;
 
