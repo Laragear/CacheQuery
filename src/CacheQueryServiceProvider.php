@@ -19,8 +19,6 @@ class CacheQueryServiceProvider extends ServiceProvider
 
     /**
      * Register the service provider.
-     *
-     * @return void
      */
     public function register(): void
     {
@@ -29,8 +27,6 @@ class CacheQueryServiceProvider extends ServiceProvider
 
     /**
      * Bootstrap the application services.
-     *
-     * @return void
      */
     public function boot(): void
     {
@@ -54,8 +50,6 @@ class CacheQueryServiceProvider extends ServiceProvider
 
     /**
      * Creates a macro for the base Query Builder.
-     *
-     * @return \Closure
      */
     protected function macro(): Closure
     {
@@ -82,8 +76,6 @@ class CacheQueryServiceProvider extends ServiceProvider
 
     /**
      * Creates a macro for the base Query Builder.
-     *
-     * @return \Closure
      */
     protected function eloquentMacro(): Closure
     {

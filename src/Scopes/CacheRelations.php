@@ -13,11 +13,6 @@ class CacheRelations implements Scope
 {
     /**
      * Creates a new scope instance.
-     *
-     * @param  \DateTimeInterface|\DateInterval|int|null  $ttl
-     * @param  string  $key
-     * @param  string|null  $store
-     * @param  int  $wait
      */
     public function __construct(
         protected DateTimeInterface|DateInterval|int|null $ttl,
@@ -30,10 +25,6 @@ class CacheRelations implements Scope
 
     /**
      * Apply the scope to a given Eloquent query builder.
-     *
-     * @param  \Illuminate\Database\Eloquent\Builder  $builder
-     * @param  \Illuminate\Database\Eloquent\Model  $model
-     * @return void
      */
     public function apply(Builder $builder, Model $model): void
     {

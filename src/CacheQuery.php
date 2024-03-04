@@ -11,10 +11,6 @@ class CacheQuery
 {
     /**
      * Create a new Cache Query instance.
-     *
-     * @param  \Illuminate\Contracts\Cache\Factory  $cache
-     * @param  \Illuminate\Contracts\Config\Repository  $config
-     * @param  string|null  $store
      */
     public function __construct(
         protected CacheContract $cache,
@@ -26,8 +22,6 @@ class CacheQuery
 
     /**
      * Retrieves the repository using the set store name.
-     *
-     * @return \Illuminate\Contracts\Cache\Repository
      */
     protected function repository(): Repository
     {
@@ -37,7 +31,6 @@ class CacheQuery
     /**
      * Changes the cache store to work with.
      *
-     * @param  string  $store
      * @return $this
      */
     public function store(string $store): static
@@ -66,11 +59,6 @@ class CacheQuery
 
     /**
      * Forgets a query using the user key used to persist it.
-     *
-     * @param  string  ...$keys
-     * @return bool
-     *
-     * @throws \Psr\SimpleCache\InvalidArgumentException
      */
     public function forget(string ...$keys): bool
     {
@@ -80,10 +68,7 @@ class CacheQuery
     /**
      * Returns a collection of query keys to delete.
      *
-     * @param  array  $keys
-     * @return \Illuminate\Support\Collection
-     *
-     * @throws \Psr\SimpleCache\InvalidArgumentException
+     * @return \Illuminate\Support\Collection<int, string>
      */
     protected function getQueries(array $keys): Collection
     {

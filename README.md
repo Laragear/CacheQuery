@@ -4,7 +4,7 @@
 [![Codecov coverage](https://codecov.io/gh/Laragear/CacheQuery/branch/1.x/graph/badge.svg?token=IOZS1TFJ5G)](https://codecov.io/gh/Laragear/CacheQuery)
 [![Maintainability](https://api.codeclimate.com/v1/badges/7e7894f3eee3939333eb/maintainability)](https://codeclimate.com/github/Laragear/CacheQuery/maintainability)
 [![Sonarcloud Status](https://sonarcloud.io/api/project_badges/measure?project=Laragear_CacheQuery&metric=alert_status)](https://sonarcloud.io/dashboard?id=Laragear_CacheQuery)
-[![Laravel Octane Compatibility](https://img.shields.io/badge/Laravel%20Octane-Compatible-success?style=flat&logo=laravel)](https://laravel.com/docs/10.x/octane#introduction)
+[![Laravel Octane Compatibility](https://img.shields.io/badge/Laravel%20Octane-Compatible-success?style=flat&logo=laravel)](https://laravel.com/docs/11.x/octane#introduction)
 
 Remember your query results using only one method. Yes, only one.
 
@@ -20,8 +20,7 @@ Your support allows me to keep this package free, up-to-date and maintainable. A
 
 ## Requirements
 
-* PHP 8 or later
-* Laravel 9, 10 or later
+* Laravel 10 or later
 
 ## Installation
 
@@ -228,7 +227,7 @@ User::query()->cache()->whereAge(20)->whereName('Joe')->first();
 // Cache key: "cache-query|muDJevbVppCsTFcdeZBxsA=="
 ```
 
-To avoid this, ensure you always execute the same query, or centralize the query somewhere in your application (like using a [query scope](https://laravel.com/docs/10.x/eloquent#query-scopes)).
+To avoid this, ensure you always execute the same query, or centralize the query somewhere in your application (like using a [query scope](https://laravel.com/docs/11.x/eloquent#query-scopes)).
 
 > **Note** This is by design. Ordering the query bindings would make operations commutative, but also disrupt [query-index optimizations](https://use-the-index-luke.com/sql/where-clause/the-equals-operator/concatenated-keys). Consider this not a bug, but a _feature_.
 
@@ -278,4 +277,4 @@ If you discover any security related issues, please email darkghosthunter@gmail.
 
 This specific package version is licensed under the terms of the [MIT License](LICENSE.md), at time of publishing.
 
-[Laravel](https://laravel.com) is a Trademark of [Taylor Otwell](https://github.com/TaylorOtwell/). Copyright © 2011-2023 Laravel LLC.
+[Laravel](https://laravel.com) is a Trademark of [Taylor Otwell](https://github.com/TaylorOtwell/). Copyright © 2011-2024 Laravel LLC.

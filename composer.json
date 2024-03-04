@@ -3,7 +3,7 @@
     "description": "Remember your query results using only one method. Yes, only one.",
     "type": "library",
     "license": "MIT",
-    "minimum-stability": "stable",
+    "minimum-stability": "dev",
     "prefer-stable": true,
     "authors": [
         {
@@ -17,16 +17,16 @@
         "issues": "https://github.com/laragear/cache-query/issues"
     },
     "require": {
-        "php": "8.*",
-        "illuminate/cache": "9.*|10.*",
-        "illuminate/config": "9.*|10.*",
-        "illuminate/database": "9.*|10.*",
-        "illuminate/support": "9.*|10.*",
-        "illuminate/container": "9.*|10.*",
-        "illuminate/contracts": "9.*|10.*"
+        "php": "^8.1",
+        "illuminate/cache": "10.*|11.*",
+        "illuminate/config": "10.*|11.*",
+        "illuminate/database": "10.*|11.*",
+        "illuminate/support": "10.*|11.*",
+        "illuminate/container": "10.*|11.*",
+        "illuminate/contracts": "10.*|11.*"
     },
     "require-dev": {
-        "orchestra/testbench": "^7.22|8.*"
+        "orchestra/testbench": "8.*|9.*"
     },
     "autoload": {
         "psr-4": {

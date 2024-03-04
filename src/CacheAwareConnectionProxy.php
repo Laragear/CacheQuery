@@ -11,7 +11,6 @@ use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Database\Connection;
 use Illuminate\Database\ConnectionInterface;
 use LogicException;
-
 use function array_shift;
 use function base64_encode;
 use function cache;
@@ -27,14 +26,7 @@ class CacheAwareConnectionProxy extends Connection
     /**
      * Create a new Cache Aware Connection Proxy instance.
      *
-     * @param  \Illuminate\Database\ConnectionInterface  $connection
-     * @param  \Illuminate\Contracts\Cache\Repository  $repository
-     * @param  \DateTimeInterface|\DateInterval|int|null  $ttl
-     * @param  int  $lockWait
-     * @param  string  $cachePrefix
-     * @param  string  $userKey
-     * @param  string  $computedKey
-     * @param  string  $queryKeySuffix
+     * @noinspection PhpMissingParentConstructorInspection
      */
     public function __construct(
         public ConnectionInterface $connection,
@@ -113,10 +105,6 @@ class CacheAwareConnectionProxy extends Connection
 
     /**
      * Hashes the incoming query for using as cache key.
-     *
-     * @param  string  $query
-     * @param  array  $bindings
-     * @return string
      */
     protected function getQueryHash(string $query, array $bindings): string
     {
@@ -125,9 +113,6 @@ class CacheAwareConnectionProxy extends Connection
 
     /**
      * Retrieves the lock to use before getting the results.
-     *
-     * @param  string  $key
-     * @return \Illuminate\Contracts\Cache\Lock
      */
     protected function retrieveLock(string $key): Lock
     {
@@ -141,11 +126,6 @@ class CacheAwareConnectionProxy extends Connection
 
     /**
      * Retrieve the results from the cache.
-     *
-     * @param  string  $key
-     * @return null[]
-     *
-     * @throws \Psr\SimpleCache\InvalidArgumentException
      */
     protected function retrieveResultsFromCache(string $key): array
     {
@@ -159,10 +139,6 @@ class CacheAwareConnectionProxy extends Connection
 
     /**
      * Adds the computed key to the user key queries list.
-     *
-     * @param  string  $key
-     * @param  array|null  $list
-     * @return void
      */
     protected function addComputedKeyToUserKey(string $key, ?array $list): void
     {
@@ -187,9 +163,6 @@ class CacheAwareConnectionProxy extends Connection
 
     /**
      * Gets the timestamp for the expiration time.
-     *
-     * @param  \DateInterval|\DateTimeInterface|int  $expiration
-     * @return int
      */
     protected function getTimestamp(DateInterval|DateTimeInterface|int $expiration): int
     {
@@ -206,9 +179,6 @@ class CacheAwareConnectionProxy extends Connection
 
     /**
      * Pass-through all properties to the underlying connection.
-     *
-     * @param  string  $name
-     * @return mixed
      */
     public function __get(string $name): mixed
     {
@@ -217,12 +187,6 @@ class CacheAwareConnectionProxy extends Connection
 
     /**
      * Pass-through all properties to the underlying connection.
-     *
-     * @param  string  $name
-     * @param  mixed  $value
-     * @return void
-     *
-     * @noinspection MagicMethodsValidityInspection
      */
     public function __set(string $name, mixed $value): void
     {
@@ -243,13 +207,6 @@ class CacheAwareConnectionProxy extends Connection
 
     /**
      * Create a new CacheAwareProxy instance.
-     *
-     * @param  \Illuminate\Database\ConnectionInterface  $connection
-     * @param  \DateTimeInterface|\DateInterval|int|null  $ttl
-     * @param  string  $key
-     * @param  int  $wait
-     * @param  string|null  $store
-     * @return static
      */
     public static function crateNewInstance(
         ConnectionInterface $connection,
@@ -270,11 +227,7 @@ class CacheAwareConnectionProxy extends Connection
     }
 
     /**
-     * Returns the store to se for caching.
-     *
-     * @param  string|null  $store
-     * @param  bool  $lockable
-     * @return \Illuminate\Contracts\Cache\Repository
+     * Returns the store for caching.
      */
     protected static function store(?string $store, bool $lockable): Repository
     {
