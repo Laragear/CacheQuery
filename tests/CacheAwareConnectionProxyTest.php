@@ -17,6 +17,7 @@ use Laragear\CacheQuery\CacheAwareConnectionProxy;
 use LogicException;
 use Mockery;
 use Orchestra\Testbench\Attributes\WithMigration;
+
 use function floor;
 use function max;
 use function now;
@@ -37,7 +38,7 @@ class CacheAwareConnectionProxyTest extends TestCase
                 'email_verified_at' => today(),
             ])->toArray());
 
-            $this->app->make('db')->table('posts')->insert(Collection::times(6, fn($i) => [
+            $this->app->make('db')->table('posts')->insert(Collection::times(6, fn ($i) => [
                 'title' => $this->faker->text(20),
                 'user_id' => (int) floor(max(1, $i / 2)),
             ])->toArray());
