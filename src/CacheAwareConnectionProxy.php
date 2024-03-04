@@ -11,6 +11,7 @@ use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Database\Connection;
 use Illuminate\Database\ConnectionInterface;
 use LogicException;
+
 use function array_shift;
 use function base64_encode;
 use function cache;
