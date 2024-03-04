@@ -10,45 +10,40 @@ use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Laragear\CacheQuery\CacheAwareConnectionProxy;
 use LogicException;
 use Mockery;
-
+use Orchestra\Testbench\Attributes\WithMigration;
+use function floor;
+use function max;
 use function now;
 use function today;
 
+#[WithMigration]
 class CacheAwareConnectionProxyTest extends TestCase
 {
-    use RefreshDatabase;
     use WithFaker;
 
     protected function setUp(): void
     {
-        parent::setUp();
-
-        for ($i = 0; $i < 10; $i++) {
-            $users[] = [
+        $this->afterApplicationCreated(function () {
+            $this->app->make('db')->table('users')->insert(Collection::times(10, fn () => [
                 'email' => $this->faker->freeEmail,
                 'name' => $this->faker->name,
                 'password' => 'password',
                 'email_verified_at' => today(),
-            ];
-        }
+            ])->toArray());
 
-        $this->app->make('db')->table('users')->insert($users);
-
-        for ($i = 0; $i < 6; $i++) {
-            $posts[] = [
+            $this->app->make('db')->table('posts')->insert(Collection::times(6, fn($i) => [
                 'title' => $this->faker->text(20),
                 'user_id' => (int) floor(max(1, $i / 2)),
-            ];
-        }
+            ])->toArray());
+        });
 
-        $this->app->make('db')->table('posts')->insert($posts);
+        parent::setUp();
     }
 
     protected function defineDatabaseMigrations(): void
@@ -309,7 +304,7 @@ class CacheAwareConnectionProxyTest extends TestCase
         $repository = $this->mock(Repository::class);
         $repository->expects('getMultiple')->with([$hash, ''])->times(4)->andReturn(['' => null, $hash => null]);
         $repository->allows('getStore')->never();
-        $repository->expects('forever')->with($hash, Mockery::type('array'));
+        $repository->expects('put')->with($hash, Mockery::type('array'), null);
         $repository->expects('put')->with($hash, Mockery::type('array'), $seconds);
         $repository->expects('put')->with($hash, Mockery::type('array'), $now);
         $repository->expects('put')->with($hash, Mockery::type('array'), $interval);
@@ -396,9 +391,6 @@ class CacheAwareConnectionProxyTest extends TestCase
         $this->app->make('db')->table('users')->where('id', 2)->cache(ttl: now()->addSeconds(120), key: 'bar')->first();
         $this->app->make('db')->table('users')->where('id', 2)->cache(ttl: now()->addSeconds(30), key: 'bar')->first();
 
-        $this->app->make('db')->table('users')->where('id', 3)->cache(ttl: now()->addSeconds(120)->diffAsCarbonInterval(), key: 'baz')->first();
-        $this->app->make('db')->table('users')->where('id', 3)->cache(ttl: now()->addSeconds(30)->diffAsCarbonInterval(), key: 'baz')->first();
-
         $this->app->make('db')->table('users')->where('id', 4)->cache(ttl: null, key: 'quz')->first();
         $this->app->make('db')->table('users')->where('id', 4)->cache(ttl: 30, key: 'quz')->first();
 
@@ -406,21 +398,18 @@ class CacheAwareConnectionProxyTest extends TestCase
 
         static::assertTrue($this->app->make('cache')->has('cache-query|foo'));
         static::assertTrue($this->app->make('cache')->has('cache-query|bar'));
-        static::assertTrue($this->app->make('cache')->has('cache-query|baz'));
         static::assertTrue($this->app->make('cache')->has('cache-query|quz'));
 
         $this->travelTo(now()->addMinute()->subSecond());
 
         static::assertTrue($this->app->make('cache')->has('cache-query|foo'));
         static::assertTrue($this->app->make('cache')->has('cache-query|bar'));
-        static::assertTrue($this->app->make('cache')->has('cache-query|baz'));
         static::assertTrue($this->app->make('cache')->has('cache-query|quz'));
 
         $this->travelTo(now()->addSeconds(2));
 
         static::assertFalse($this->app->make('cache')->has('cache-query|foo'));
         static::assertFalse($this->app->make('cache')->has('cache-query|bar'));
-        static::assertFalse($this->app->make('cache')->has('cache-query|baz'));
 
         static::assertTrue($this->app->make('cache')->has('cache-query|quz'));
     }

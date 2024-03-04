@@ -73,11 +73,7 @@ class CacheAwareConnectionProxy extends Connection
                 if ($results === null) {
                     $results = $this->connection->select($query, $bindings, $useReadPdo);
 
-                    if ($this->ttl === null) {
-                        $this->repository->forever($key, $results);
-                    } else {
-                        $this->repository->put($key, $results, $this->ttl);
-                    }
+                    $this->repository->put($key, $results, $this->ttl);
 
                     // If the user added a user key, we will append this computed key to it and save it.
                     if ($this->userKey) {
