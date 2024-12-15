@@ -2,6 +2,7 @@
 
 namespace Laragear\CacheQuery;
 
+use Closure;
 use DateInterval;
 use DateTimeInterface;
 use Illuminate\Cache\NoLock;
@@ -24,6 +25,13 @@ use function rtrim;
 
 class CacheAwareConnectionProxy extends Connection
 {
+    /**
+     * The Query Hasher closure.
+     *
+     * @var (\Closure(\Illuminate\Database\ConnectionInterface, string, array): string)|null
+     */
+    public static ?Closure $queryHasher = null;
+
     /**
      * Create a new Cache Aware Connection Proxy instance.
      *
@@ -105,7 +113,9 @@ class CacheAwareConnectionProxy extends Connection
      */
     protected function getQueryHash(string $query, array $bindings): string
     {
-        return rtrim(base64_encode(md5($this->connection->getDatabaseName().$query.implode('', $bindings), true)), '=');
+        return isset(static::$queryHasher)
+            ? (static::$queryHasher)($this->connection, $query, $bindings)
+            : rtrim(base64_encode(md5($this->connection->getDatabaseName().$query.implode('', $bindings), true)), '=');
     }
 
     /**
