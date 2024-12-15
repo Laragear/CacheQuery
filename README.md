@@ -164,6 +164,29 @@ CacheQuery::forget('latest_articles');
 
 > This functionality does not use cache tags, so it will work on any cache store you set, even the `file` driver!
 
+## Custom Hash Function
+
+You can set your own function to hash the incoming SQL Query. Just register your function in the `$queryHasher` static property of the `CacheAwareConnectionProxy` class. The function should receive the database Connection, the query string, and the SQL bindings in form of an array.
+
+This can be done in the `register()` method of your `AppServiceProvider`.
+
+```php
+namespace App\Providers;
+
+use Illuminate\Support\ServiceProvider;
+use Laragear\CacheQuery\CacheAwareConnectionProxy;
+
+class AppServiceProvider extends ServiceProvider
+{
+    public function register()
+    {
+        CacheAwareConnectionProxy::$queryHasher = function ($connection, $query, $bindings) {
+            // ...
+        }
+    }
+}
+```
+
 ## Configuration
 
 To further configure the package, publish the configuration file:

@@ -42,6 +42,8 @@ class CacheAwareConnectionProxyTest extends TestCase
                 'title' => $this->faker->text(20),
                 'user_id' => (int) floor(max(1, $i / 2)),
             ])->toArray());
+
+            CacheAwareConnectionProxy::$queryHasher = null;
         });
 
         parent::setUp();
@@ -669,6 +671,24 @@ class CacheAwareConnectionProxyTest extends TestCase
         );
 
         static::assertSame($results, $retrieved);
+    }
+
+    public function test_sets_custom_query_hasher(): void
+    {
+        CacheAwareConnectionProxy::$queryHasher = function (
+            ConnectionInterface $connection,
+            string $query,
+            array $bindings
+        ) use (&$args) {
+            static::assertSame(':memory:', $connection->getDatabaseName());
+            static::assertSame('select * from "users" where "users"."id" = ? limit 1', $query);
+            static::assertSame([0 => 1], $bindings);
+            return 'test_hash';
+        };
+
+        User::query()->cache('foo')->whereKey(1)->first();
+
+        static::assertTrue($this->app->make('cache')->has('cache-query|test_hash'));
     }
 }
 
