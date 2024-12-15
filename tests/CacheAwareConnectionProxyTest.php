@@ -683,6 +683,7 @@ class CacheAwareConnectionProxyTest extends TestCase
             static::assertSame(':memory:', $connection->getDatabaseName());
             static::assertSame('select * from "users" where "users"."id" = ? limit 1', $query);
             static::assertSame([0 => 1], $bindings);
+
             return 'test_hash';
         };
 
