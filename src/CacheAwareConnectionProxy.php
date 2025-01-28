@@ -17,10 +17,13 @@ use function array_shift;
 use function base64_encode;
 use function cache;
 use function config;
+use function count;
 use function implode;
+use function is_array;
 use function is_int;
 use function max;
 use function md5;
+use function method_exists;
 use function rtrim;
 
 class CacheAwareConnectionProxy extends Connection
@@ -40,7 +43,7 @@ class CacheAwareConnectionProxy extends Connection
     public function __construct(
         public ConnectionInterface $connection,
         protected Repository $repository,
-        protected DateTimeInterface|DateInterval|int|null $ttl,
+        protected DateTimeInterface|DateInterval|int|array|null $ttl,
         protected int $lockWait,
         protected string $cachePrefix,
         public string $userKey = '',
@@ -81,7 +84,11 @@ class CacheAwareConnectionProxy extends Connection
                 if ($results === null) {
                     $results = $this->connection->select($query, $bindings, $useReadPdo);
 
-                    $this->repository->put($key, $results, $this->ttl);
+                    if (is_array($this->ttl) && count($this->ttl) > 1 && method_exists($this->repository, 'flexible')) {
+                        $this->repository->flexible($key, $results, $this->ttl);
+                    } else {
+                        $this->repository->put($key, $results, $this->ttl);
+                    }
 
                     // If the user added a user key, we will append this computed key to it and save it.
                     if ($this->userKey) {
@@ -217,7 +224,7 @@ class CacheAwareConnectionProxy extends Connection
      */
     public static function crateNewInstance(
         ConnectionInterface $connection,
-        DateTimeInterface|DateInterval|int|null $ttl,
+        DateTimeInterface|DateInterval|int|array|null $ttl,
         string $key,
         int $wait,
         ?string $store,
