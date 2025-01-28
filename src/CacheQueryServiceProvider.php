@@ -60,15 +60,15 @@ class CacheQueryServiceProvider extends ServiceProvider
     protected function macro(): Closure
     {
         return function (
-            DateTimeInterface|DateInterval|int|bool|null $ttl = 60,
+            DateTimeInterface|DateInterval|int|bool|array|null $ttl = 60,
             string $key = '',
-            string $store = null,
+            ?string $store = null,
             int $wait = 0,
         ): Builder {
             /** @var \Illuminate\Database\Query\Builder $this */
 
             // Avoid re-wrapping the connection into another proxy.
-            if ($this->connection instanceof CacheAwareConnectionProxy) {
+            if ($this->connection instanceof CacheAwareConnectionProxy) { // @phpstan-ignore-line
                 $this->connection = $this->connection->connection;
             }
 
@@ -88,9 +88,9 @@ class CacheQueryServiceProvider extends ServiceProvider
     protected function eloquentMacro(): Closure
     {
         return function (
-            DateTimeInterface|DateInterval|int|bool|null $ttl = 60,
+            DateTimeInterface|DateInterval|int|bool|array|null $ttl = 60,
             string $key = '',
-            string $store = null,
+            ?string $store = null,
             int $wait = 0,
         ): EloquentBuilder {
             /**

@@ -109,7 +109,7 @@ Article::latest('published_at')->take(10)->cache(store: 'redis')->get();
 
 ### Cache Lock (data races)
 
-On multiple processes, the query may be executed multiple times until the first process is able to store the result in the cache, specially when these take more than one second. Take, for example, 1,000 users reading the latest 10 post of a site at the same time will call the database 100 times. 
+On multiple processes, the query may be executed multiple times until the first process is able to store the result in the cache, specially when these take more than one second. Take, for example, 1,000 users reading the latest 10 post of a site at the same time will call the database 1,000 times. 
 
 To avoid this, set the `wait` parameter with the number of seconds to hold the acquired lock.
 
@@ -122,6 +122,16 @@ Article::latest('published_at')->take(200)->cache(wait: 5)->get();
 The first process will acquire the lock for the given seconds and execute the query. The next processes will wait the same amount of seconds until the first process stores the result in the cache to retrieve it. If the first process takes too much, the second will try again.
 
 > If you need a more advanced locking mechanism, use the [cache lock](https://laravel.com/docs/cache#managing-locks-across-processes) directly.
+
+### Stale while revalidate
+
+You may take advantage of [Laravel Flexible Caching mechanism](https://laravel.com/docs/11.x/cache#swr) by issuing an array of values as first argument. (...) _The first value in the array represents the number of seconds the cache is considered fresh, while the second value defines how long it can be served as stale data before recalculation is necessary_.
+
+```php
+use App\Models\Article;
+
+Article::latest('published_at')->take(200)->cache([5, 300])->get();
+```
 
 ## Forgetting results with a key
 
