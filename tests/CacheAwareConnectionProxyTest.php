@@ -447,10 +447,9 @@ class CacheAwareConnectionProxyTest extends TestCase
 
     public function test_uses_flexible_caching_when_using_ttl_as_array_of_values(): void
     {
-        $this->markTestSkippedUnless(
-            method_exists(CacheRepository::class, 'flexible'),
-            'Cannot test flexible caching if repository does not implements it.'
-        );
+        if (!method_exists(CacheRepository::class, 'flexible')) {
+            $this->markTestSkipped('Cannot test flexible caching if repository does not implements it.');
+        }
 
         $hash = 'cache-query|fj8Xyz4K1Zh0tdAamPbG1A';
 
