@@ -445,7 +445,7 @@ class CacheAwareConnectionProxyTest extends TestCase
         static::assertSame('test', $result->name);
     }
 
-    public function test_uses_flexible_caching_when_using_ttl_as_array_of_values(): void
+    public function test_uses_db_flexible_caching_when_using_ttl_as_array_of_values(): void
     {
         if (! method_exists(CacheRepository::class, 'flexible')) {
             $this->markTestSkipped('Cannot test flexible caching if repository does not implements it.');
@@ -461,6 +461,24 @@ class CacheAwareConnectionProxyTest extends TestCase
         $this->mock('cache')->shouldReceive('store')->with(null)->andReturn($repository);
 
         $this->app->make('db')->table('users')->where('id', 1)->cache([5, 300])->first();
+    }
+
+    public function test_uses_eloquent_flexible_caching_when_using_ttl_as_array_of_values(): void
+    {
+        if (! method_exists(CacheRepository::class, 'flexible')) {
+            $this->markTestSkipped('Cannot test flexible caching if repository does not implements it.');
+        }
+
+        $hash = 'cache-query|fj8Xyz4K1Zh0tdAamPbG1A';
+
+        $repository = $this->mock(CacheRepository::class);
+        $repository->expects('put')->never();
+        $repository->expects('flexible')->with($hash, Mockery::type('array'), [5, 300])->once();
+        $repository->expects('getMultiple')->with([$hash, ''])->times(1)->andReturn(['' => null, $hash => null]);
+
+        $this->mock('cache')->shouldReceive('store')->with(null)->andReturn($repository);
+
+        User::where('id', 1)->cache([5, 300])->first();
     }
 
     public function test_doesnt_uses_flexible_caching_if_repository_is_not_flexible(): void
