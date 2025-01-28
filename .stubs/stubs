@@ -10,14 +10,14 @@ namespace Illuminate\Database\Query {
         /**
          * Caches the underlying query results.
          *
-         * @param  \DateTimeInterface|\DateInterval|int|bool|null  $ttl
+         * @param  \DateTimeInterface|\DateInterval|int|bool|array{ 0: \DateTimeInterface|\DateInterval|int, 1: \DateTimeInterface|\DateInterval|int }|null  $ttl
          * @param  string  $key
          * @param  string|null  $store
          * @param  int  $wait
-         * @return static
+         * @return $this
          */
         public function cache(
-            DateTimeInterface|DateInterval|int|bool|null $ttl = null,
+            DateTimeInterface|DateInterval|int|bool|array|null $ttl = null,
             string $key = '',
             string $store = null,
             int $wait = 0,
@@ -37,14 +37,14 @@ namespace Illuminate\Database\Eloquent {
         /**
          * Caches the underlying query results.
          *
-         * @param  \DateTimeInterface|\DateInterval|int|bool|null  $ttl
+         * @param  \DateTimeInterface|\DateInterval|int|bool|array{ 0: \DateTimeInterface|\DateInterval|int, 1: \DateTimeInterface|\DateInterval|int }|null  $ttl
          * @param  string  $key
          * @param  string|null  $store
          * @param  int  $wait
-         * @return static
+         * @return $this
          */
         public function cache(
-            DateTimeInterface|DateInterval|int|bool|null $ttl = null,
+            DateTimeInterface|DateInterval|int|bool|array|null $ttl = null,
             string $key = '',
             string $store = null,
             int $wait = 0,
