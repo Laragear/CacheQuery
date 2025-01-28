@@ -15,7 +15,7 @@ class CacheRelations implements Scope
      * Creates a new scope instance.
      */
     public function __construct(
-        protected DateTimeInterface|DateInterval|int|null $ttl,
+        protected DateTimeInterface|DateInterval|int|array|null $ttl,
         protected string $key,
         protected ?string $store,
         protected int $wait,
