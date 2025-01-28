@@ -188,7 +188,7 @@ class CacheAwareConnectionProxy extends Connection
             return now()->add($expiration)->getTimestamp();
         }
 
-        return now()->addRealSeconds($expiration)->getTimestamp();
+        return now()->addSeconds($expiration)->getTimestamp();
     }
 
     /**
