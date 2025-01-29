@@ -131,7 +131,7 @@ class CacheAwareConnectionProxy extends Connection
      */
     protected function retrieveLock(string $key): Lock
     {
-        if (!$this->lockWait) {
+        if (! $this->lockWait) {
             return new NoLock($key, $this->lockWait);
         }
 
@@ -269,7 +269,7 @@ class CacheAwareConnectionProxy extends Connection
     {
         $repository = cache()->store($store ?? config('cache-query.store'));
 
-        if ($lockable && !$repository->getStore() instanceof LockProvider) {
+        if ($lockable && ! $repository->getStore() instanceof LockProvider) {
             $store ??= cache()->getDefaultDriver();
 
             throw new LogicException("The [$store] cache does not support atomic locks.");
