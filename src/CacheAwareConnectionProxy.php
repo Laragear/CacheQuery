@@ -76,6 +76,11 @@ class CacheAwareConnectionProxy extends Connection
         // We will use the prefix to operate on the cache directly.
         $key = $this->cachePrefix.'|'.$this->computedKey;
 
+        // If the user is setting an array, we will steer return the results using "flexible".
+        if (is_array($this->ttl) && count($this->ttl) > 1 && method_exists($this->repository, 'flexible')) {
+            return $this->returnResultsUsingFlexible($query, $key, $bindings, $useReadPdo);
+        }
+
         return $this
             ->retrieveLock($key)
             ->block($this->lockWait, function () use ($query, $bindings, $useReadPdo, $key): array {
@@ -84,11 +89,7 @@ class CacheAwareConnectionProxy extends Connection
                 if ($results === null) {
                     $results = $this->connection->select($query, $bindings, $useReadPdo);
 
-                    if (is_array($this->ttl) && count($this->ttl) > 1 && method_exists($this->repository, 'flexible')) {
-                        $this->repository->flexible($key, $results, $this->ttl);
-                    } else {
-                        $this->repository->put($key, $results, $this->ttl);
-                    }
+                    $this->repository->put($key, $results, $this->ttl);
 
                     // If the user added a user key, we will append this computed key to it and save it.
                     if ($this->userKey) {
@@ -130,7 +131,7 @@ class CacheAwareConnectionProxy extends Connection
      */
     protected function retrieveLock(string $key): Lock
     {
-        if (! $this->lockWait) {
+        if (!$this->lockWait) {
             return new NoLock($key, $this->lockWait);
         }
 
@@ -178,8 +179,12 @@ class CacheAwareConnectionProxy extends Connection
     /**
      * Gets the timestamp for the expiration time.
      */
-    protected function getTimestamp(DateInterval|DateTimeInterface|int $expiration): int
+    protected function getTimestamp(DateInterval|DateTimeInterface|array|int $expiration): int
     {
+        if (is_array($expiration)) {
+            $expiration = $expiration[1];
+        }
+
         if ($expiration instanceof DateTimeInterface) {
             return $expiration->getTimestamp();
         }
@@ -220,6 +225,23 @@ class CacheAwareConnectionProxy extends Connection
     }
 
     /**
+     * Returns the results of the query using stale revalidation.
+     */
+    protected function returnResultsUsingFlexible(string $query, string $key, array $bindings, bool $useReadPdo): mixed
+    {
+        return $this->repository
+            ->flexible($key, $this->ttl, function () use ($query, $bindings, $key, $useReadPdo): mixed {
+                $results = $this->connection->select($query, $bindings, $useReadPdo);
+
+                if ($this->userKey) {
+                    $this->addComputedKeyToUserKey($key, $this->repository->get($this->userKey));
+                }
+
+                return $results;
+            });
+    }
+
+    /**
      * Create a new CacheAwareProxy instance.
      */
     public static function crateNewInstance(
@@ -247,7 +269,7 @@ class CacheAwareConnectionProxy extends Connection
     {
         $repository = cache()->store($store ?? config('cache-query.store'));
 
-        if ($lockable && ! $repository->getStore() instanceof LockProvider) {
+        if ($lockable && !$repository->getStore() instanceof LockProvider) {
             $store ??= cache()->getDefaultDriver();
 
             throw new LogicException("The [$store] cache does not support atomic locks.");

@@ -455,8 +455,8 @@ class CacheAwareConnectionProxyTest extends TestCase
 
         $repository = $this->mock(CacheRepository::class);
         $repository->expects('put')->never();
-        $repository->expects('flexible')->with($hash, Mockery::type('array'), [5, 300])->once();
-        $repository->expects('getMultiple')->with([$hash, ''])->times(1)->andReturn(['' => null, $hash => null]);
+        $repository->expects('flexible')->with($hash, [5, 300], Mockery::type('\Closure'))->once();
+        $repository->expects('getMultiple')->never();
 
         $this->mock('cache')->shouldReceive('store')->with(null)->andReturn($repository);
 
@@ -473,12 +473,29 @@ class CacheAwareConnectionProxyTest extends TestCase
 
         $repository = $this->mock(CacheRepository::class);
         $repository->expects('put')->never();
-        $repository->expects('flexible')->with($hash, Mockery::type('array'), [5, 300])->once();
-        $repository->expects('getMultiple')->with([$hash, ''])->times(1)->andReturn(['' => null, $hash => null]);
+        $repository->expects('flexible')->with($hash, [5, 300], Mockery::type('\Closure'))->once();
+        $repository->expects('getMultiple')->never();
 
         $this->mock('cache')->shouldReceive('store')->with(null)->andReturn($repository);
 
         User::where('id', 1)->cache([5, 300])->first();
+    }
+
+    public function test_flexible_cache_uses_user_key(): void
+    {
+        $cached = User::query()->cache(key: 'foo', ttl: [5, 300])->with('posts', function ($posts) {
+            $posts->whereKey(2);
+        })->whereKey(1)->first();
+
+        User::query()->whereKey(1)->delete();
+        Post::query()->whereKey(2)->delete();
+
+        $renewed = User::query()->cache(key: 'foo', ttl: [5, 300])->with('posts', function ($posts) {
+            $posts->whereKey(2);
+        })->whereKey(1)->first();
+
+        static::assertTrue($cached->is($renewed));
+        static::assertCount(1, $renewed->posts);
     }
 
     public function test_doesnt_uses_flexible_caching_if_repository_is_not_flexible(): void
