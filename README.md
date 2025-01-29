@@ -133,10 +133,6 @@ use App\Models\Article;
 Article::latest('published_at')->take(200)->cache([5, 300])->get();
 ```
 
-> [!WARN]
-> 
-> When using stale revalidation, 
-
 ## Forgetting results with a key
 
 Cache keys are used to identify multiple queries cached with an identifiable name. These are not mandatory, but if you expect to remove a query from the cache, you will need to identify the query with the `key` argument. 
