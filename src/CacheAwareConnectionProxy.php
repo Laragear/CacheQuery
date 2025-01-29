@@ -229,7 +229,7 @@ class CacheAwareConnectionProxy extends Connection
      */
     protected function returnResultsUsingFlexible(string $query, string $key, array $bindings, bool $useReadPdo): mixed
     {
-        return $this->repository
+        return $this->repository // @phpstan-ignore-line
             ->flexible($key, $this->ttl, function () use ($query, $bindings, $key, $useReadPdo): mixed {
                 $results = $this->connection->select($query, $bindings, $useReadPdo);
 
