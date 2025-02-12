@@ -9,6 +9,7 @@ use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Database\Connection;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Support\Str;
+
 use function app;
 use function array_shift;
 use function is_array;
@@ -224,6 +225,7 @@ class Proxy extends Connection
      * @param  string  $method
      * @param  array  $parameters
      * @return mixed
+     *
      * @codeCoverageIgnore
      */
     public function __call($method, $parameters)
