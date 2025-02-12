@@ -6,6 +6,7 @@ use DateInterval;
 use DateTimeInterface;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
+
 use function in_array;
 use function is_numeric;
 use function is_string;

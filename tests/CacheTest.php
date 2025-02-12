@@ -6,6 +6,7 @@ use Carbon\CarbonInterval;
 use InvalidArgumentException;
 use Laragear\CacheQuery\Cache;
 use PHPUnit\Framework\TestCase as BaseTestCase;
+
 use function now;
 
 class CacheTest extends BaseTestCase
@@ -131,7 +132,7 @@ class CacheTest extends BaseTestCase
     {
         $cache = Cache::for(60);
 
-        $cache->regenWhen($condition = fn() => true);
+        $cache->regenWhen($condition = fn () => true);
 
         static::assertTrue($cache->regenFactor);
         static::assertSame($condition, $cache->regenerate);
@@ -141,7 +142,7 @@ class CacheTest extends BaseTestCase
     {
         $cache = Cache::for(60);
 
-        $cache->regenIf($condition = fn() => true);
+        $cache->regenIf($condition = fn () => true);
 
         static::assertTrue($cache->regenFactor);
         static::assertSame($condition, $cache->regenerate);
@@ -151,7 +152,7 @@ class CacheTest extends BaseTestCase
     {
         $cache = Cache::for(60);
 
-        $cache->regenUnless($condition = fn() => false);
+        $cache->regenUnless($condition = fn () => false);
 
         static::assertFalse($cache->regenFactor);
         static::assertSame($condition, $cache->regenerate);

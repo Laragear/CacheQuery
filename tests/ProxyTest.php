@@ -3,10 +3,7 @@
 namespace Tests;
 
 use Carbon\CarbonInterval;
-use Closure;
 use Illuminate\Cache\Repository as CacheRepository;
-use Illuminate\Contracts\Cache\Lock;
-use Illuminate\Contracts\Cache\LockProvider;
 use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Eloquent\Model;
@@ -17,7 +14,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Laragear\CacheQuery\Cache;
 use Laragear\CacheQuery\Proxy;
-use LogicException;
 use Mockery;
 use Orchestra\Testbench\Attributes\WithMigration;
 
@@ -556,13 +552,12 @@ class ProxyTest extends TestCase
             ->times(1)
             ->andReturn(['cache-query|some-key' => null, $hash => null]);
 
-
         $this->mock('cache')->expects('store')->with(null)->andReturn($repository);
 
         $this->app->make('db')
             ->table('users')
             ->where('id', 1)
-            ->cache(fn($cache) => $cache->ttl($interval)->as('some-key'))->first();
+            ->cache(fn ($cache) => $cache->ttl($interval)->as('some-key'))->first();
     }
 
     public function test_uses_custom_store(): void
@@ -579,7 +574,7 @@ class ProxyTest extends TestCase
         $this->app->make('db')
             ->table('users')
             ->where('id', 1)
-            ->cache(fn($cache) => $cache->store('test-store'))->first();
+            ->cache(fn ($cache) => $cache->store('test-store'))->first();
     }
 
     public function test_uses_eloquent_flexible_caching_when_using_ttl_as_array_of_values(): void
