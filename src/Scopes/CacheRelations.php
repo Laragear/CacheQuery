@@ -2,27 +2,14 @@
 
 namespace Laragear\CacheQuery\Scopes;
 
-use DateInterval;
-use DateTimeInterface;
 use Illuminate\Contracts\Database\Eloquent\Builder as EloquentBuilderContract;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Scope;
+use Laragear\CacheQuery\Cache;
 
 class CacheRelations implements Scope
 {
-    /**
-     * Creates a new scope instance.
-     */
-    public function __construct(
-        protected DateTimeInterface|DateInterval|int|array|null $ttl,
-        protected string $key,
-        protected ?string $store,
-        protected int $wait,
-    ) {
-        //
-    }
-
     /**
      * Apply the scope to a given Eloquent query builder.
      */
@@ -38,8 +25,7 @@ class CacheRelations implements Scope
                 $callback($eloquent);
 
                 // Always override the previous eloquent builder with the base cache parameters.
-                // @phpstan-ignore-next-line
-                $eloquent->cache($this->ttl, $this->key, $this->store, $this->wait);
+                $eloquent->cache($builder->getConnection()->getCacheHelperInstance()); // @phpstan-ignore-line
 
                 // @phpstan-ignore-next-line
                 $eloquent->getConnection()->queryKeySuffix = $builder->getConnection()->computedKey;

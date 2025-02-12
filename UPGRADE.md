@@ -1,6 +1,20 @@
 # Upgrading
 
-## From 2.x
+## From 4.x
+
+### Regeneration
+
+Regeneration has been moved into the `Laragear\CacheQuery\Cache` class. If you need to programmatically regenerate results, use the `regenWhen()` and `regenUnless()` methods of the aforementioned class.
+
+### Locks
+
+Locks have been removed in favour of flexible caching, which under the hood already uses locks. If you're using locks, you should migrate to flexible caching.
+
+### Cache Store
+
+Custom Cache Store has been moved into the `Laragear\CacheQuery\Cache` class. If you need to use a non-default cache store, use the `store()` method of the aforementioned class.
+
+## From 2.x or 3.x
 
 ### Cache keys
 

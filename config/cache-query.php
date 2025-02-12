@@ -28,4 +28,17 @@ return [
 
     'prefix' => 'cache-query',
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Commutative
+    |--------------------------------------------------------------------------
+    |
+    | Cached queries are identified by a key hash created by sorting the query
+    | data. This makes "visually" similar queries share the same cache key.
+    | If you don't want that, you can turn off commutative queries here.
+    |
+    */
+
+    'commutative' => false,
 ];

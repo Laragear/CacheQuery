@@ -17,16 +17,16 @@
         "issues": "https://github.com/laragear/cache-query/issues"
     },
     "require": {
-        "php": "^8.1",
-        "illuminate/cache": "10.*|11.*",
-        "illuminate/config": "10.*|11.*",
-        "illuminate/database": "10.*|11.*",
-        "illuminate/support": "10.*|11.*",
-        "illuminate/container": "10.*|11.*",
-        "illuminate/contracts": "10.*|11.*"
+        "php": "^8.2",
+        "illuminate/cache": "11.*|10.*",
+        "illuminate/config": "11.*|10.*",
+        "illuminate/database": "11.*|10.*",
+        "illuminate/support": "11.*|10.*",
+        "illuminate/container": "11.*|10.*",
+        "illuminate/contracts": "11.*|10.*"
     },
     "require-dev": {
-        "orchestra/testbench": "8.*|9.*"
+        "orchestra/testbench": "9.*|10.*"
     },
     "autoload": {
         "psr-4": {
