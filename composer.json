@@ -18,12 +18,12 @@
     },
     "require": {
         "php": "^8.2",
-        "illuminate/cache": "11.*|10.*",
-        "illuminate/config": "11.*|10.*",
-        "illuminate/database": "11.*|10.*",
-        "illuminate/support": "11.*|10.*",
-        "illuminate/container": "11.*|10.*",
-        "illuminate/contracts": "11.*|10.*"
+        "illuminate/cache": "11.*|12.*",
+        "illuminate/config": "11.*|12.*",
+        "illuminate/database": "11.*|12.*",
+        "illuminate/support": "11.*|12.*",
+        "illuminate/container": "11.*|12.*",
+        "illuminate/contracts": "11.*|12.*"
     },
     "require-dev": {
         "orchestra/testbench": "9.*|10.*"
