@@ -219,7 +219,6 @@ class Cache
      * Regenerates the cached results before a specific amount of seconds before the data dies.
      *
      * @param  array{ seconds?: int, owner?: string }|null  $lock
-     * @return $this
      */
     public static function flexible(int $seconds, int $stale, ?array $lock = null): static
     {

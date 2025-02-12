@@ -109,11 +109,10 @@ class CacheQueryServiceProvider extends ServiceProvider
             /** @var \Illuminate\Database\Eloquent\Builder $this */
             $this->getQuery()->cache($ttl); // @phpstan-ignore-line
 
-            $cache = $this->getQuery()->getConnection()->getCacheHelperInstance(); // @phpstan-ignore-line
-
-            if ($cache->saveNestedQueries) {
+            // @phpstan-ignore-next-line
+            if ($this->getQuery()->getConnection()->getCacheHelperInstance()->saveNestedQueries) {
                 // This global scope is responsible for caching eager loaded relations. If the
-                $this->withGlobalScope(Scopes\CacheRelations::class, new Scopes\CacheRelations($cache));
+                $this->withGlobalScope(Scopes\CacheRelations::class, new Scopes\CacheRelations());
             }
 
             return $this;
