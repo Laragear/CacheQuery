@@ -10,7 +10,6 @@ use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\ServiceProvider;
-
 use function app;
 use function base64_encode;
 use function explode;
@@ -44,11 +43,11 @@ class CacheQueryServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        if (! Builder::hasMacro('cache')) {
+        if (!Builder::hasMacro('cache')) {
             Builder::macro('cache', $this->macro());
         }
 
-        if (! EloquentBuilder::hasGlobalMacro('cache')) {
+        if (!EloquentBuilder::hasGlobalMacro('cache')) {
             EloquentBuilder::macro('cache', $this->eloquentMacro());
         }
 
@@ -90,7 +89,7 @@ class CacheQueryServiceProvider extends ServiceProvider
             // Normalize the TTL argument to a Cache instance.
             $this->connection = Proxy::crateNewInstance($this->connection, match (true) {
                 $ttl instanceof Closure => $ttl(new Cache),
-                ! $ttl instanceof Cache => (new Cache)->ttl($ttl),
+                !$ttl instanceof Cache => (new Cache)->ttl($ttl),
                 default => $ttl
             });
 
@@ -111,7 +110,7 @@ class CacheQueryServiceProvider extends ServiceProvider
 
             // @phpstan-ignore-next-line
             if ($this->getQuery()->getConnection()->getCacheHelperInstance()->saveNestedQueries) {
-                // This global scope is responsible for caching eager loaded relations. If the
+                // This global scope is responsible for caching eager loaded relations.
                 $this->withGlobalScope(Scopes\CacheRelations::class, new Scopes\CacheRelations());
             }
 

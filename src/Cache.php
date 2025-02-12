@@ -11,6 +11,7 @@ use function in_array;
 use function is_numeric;
 use function is_string;
 
+/** @phpstan-consistent-constructor */
 class Cache
 {
     /**
