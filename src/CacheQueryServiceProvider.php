@@ -92,7 +92,7 @@ class CacheQueryServiceProvider extends ServiceProvider
             match (true) {
                 $ttl instanceof Closure => $ttl($cache),
                 ! $ttl instanceof Cache => $cache->ttl($ttl),
-                default => $ttl
+                default => $cache = $ttl
             };
 
             // Normalize the TTL argument to a Cache instance.
