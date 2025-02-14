@@ -71,13 +71,6 @@ class ProxyTest extends TestCase
         });
     }
 
-    public function test_passes_through_method_calls(): void
-    {
-        $query = $this->app->make('db')->table('users')->cache()->where('id', 1);
-
-        static::assertSame([], $query->getConnection()->getQueryLog());
-    }
-
     public function test_caches_base_query_into_default_store(): void
     {
         $get = $this->app->make('db')->table('users')->cache()->where('id', 1)->get();
@@ -874,6 +867,10 @@ class ProxyTest extends TestCase
         $connection->setDatabaseName('foo');
 
         static::assertSame('foo', $connection->getDatabaseName());
+
+        $query = $this->app->make('db')->table('users')->cache()->where('id', 1);
+
+        static::assertSame([], $query->getConnection()->getQueryLog());
     }
 
     public function test_pass_through_properties_set_and_get(): void
@@ -915,6 +912,24 @@ class ProxyTest extends TestCase
         User::query()->cache()->whereKey(1)->first();
 
         static::assertTrue($this->app->make('cache')->has('cache-query|test_hash'));
+    }
+
+    public function test_base_query_uses_cache_callback(): void
+    {
+        $hash = 'cache-query|fj8Xyz4K1Zh0tdAamPbG1A';
+
+        $repository = $this->mock(Repository::class);
+        $repository->expects('flexible')->never();
+        $repository->expects('put')->with($hash, Mockery::type('array'), [5, 300])->once();
+        $repository->expects('getMultiple')->with([$hash, ''])->times(1)->andReturn(['' => null, $hash => null]);
+
+        $this->mock('cache')->expects('store')->with(null)->andReturn($repository);
+
+        $this->app->make('db')->table('users')->where('id', 1)->cache(function ($cache) {
+            static::assertInstanceOf(Cache::class, $cache);
+
+            $cache->ttl([5, 300]);
+        })->first();
     }
 }
 

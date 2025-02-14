@@ -87,12 +87,16 @@ class CacheQueryServiceProvider extends ServiceProvider
                 $this->connection = $this->connection->connection;
             }
 
+            $cache = new Cache();
+
+            match (true) {
+                $ttl instanceof Closure => $ttl($cache),
+                ! $ttl instanceof Cache => $cache->ttl($ttl),
+                default => $cache = $ttl
+            };
+
             // Normalize the TTL argument to a Cache instance.
-            $this->connection = Proxy::crateNewInstance($this->connection, match (true) {
-                $ttl instanceof Closure => $ttl(new Cache),
-                ! $ttl instanceof Cache => (new Cache)->ttl($ttl),
-                default => $ttl
-            });
+            $this->connection = Proxy::crateNewInstance($this->connection, $cache);
 
             return $this;
         };
