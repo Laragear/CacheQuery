@@ -1,10 +1,10 @@
 # Cache Query 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/laragear/cache-query.svg)](https://packagist.org/packages/laragear/cache-query)
 [![Latest stable test run](https://github.com/Laragear/CacheQuery/workflows/Tests/badge.svg)](https://github.com/Laragear/CacheQuery/actions)
-[![Codecov coverage](https://codecov.io/gh/Laragear/CacheQuery/branch/5.x/graph/badge.svg?token=IOZS1TFJ5G)](https://codecov.io/gh/Laragear/CacheQuery)
+[![Codecov coverage](https://codecov.io/gh/Laragear/CacheQuery/graph/badge.svg?token=IOZS1TFJ5G)](https://codecov.io/gh/Laragear/CacheQuery)
 [![Maintainability](https://qlty.sh/badges/8738ff13-01ca-4d38-83a8-dd484723093d/maintainability.svg)](https://qlty.sh/gh/Laragear/projects/CacheQuery)
 [![Sonarcloud Status](https://sonarcloud.io/api/project_badges/measure?project=Laragear_CacheQuery&metric=alert_status)](https://sonarcloud.io/dashboard?id=Laragear_CacheQuery)
-[![Laravel Octane Compatibility](https://img.shields.io/badge/Laravel%20Octane-Compatible-success?style=flat&logo=laravel)](https://laravel.com/docs/11.x/octane#introduction)
+[![Laravel Octane Compatibility](https://img.shields.io/badge/Laravel%20Octane-Compatible-success?style=flat&logo=laravel)](https://laravel.com/docs/13.x/octane#introduction)
 
 Remember your query results using only one method. Yes, only one.
 
@@ -20,7 +20,8 @@ Your support allows me to keep this package free, up-to-date and maintainable. A
 
 ## Requirements
 
-* Laravel 11 or later
+* PHP 8.3 
+* Laravel 12 or later
 
 ## Installation
 
@@ -30,15 +31,15 @@ You can install the package via composer:
 composer require laragear/cache-query
 ```
 
-## How it works?
+## How does it work?
 
-This library wraps the connection into a proxy object. It proxies all method calls to it except `select()` and `selectOne()`.
+This library wraps the database connection into a proxy object. It proxies all method calls to it except `select()` and `selectOne()`.
 
 Once a `SELECT` statement is executed through the aforementioned methods, it will check if the results are in the cache before executing the query. On cache hit, it will return the cached results, otherwise it will continue execution, save the results using the cache configuration, and return them.
 
 ## Usage
 
-Just use the `cache()` method to remember the results of a query for a default of 60 seconds.
+Use the `cache()` method to remember the results of a query for a default of 60 seconds.
 
 ```php
 use Illuminate\Support\Facades\DB;
@@ -51,7 +52,7 @@ Article::latest('published_at')->take(10)->cache()->get();
 
 The next time you call the **same** query, the result will be retrieved from the cache instead of running the `SELECT` SQL statement in the database, even if the results are empty, `null` or `false`. You may also desire to [not cache empty results](#cache-except-empty-results).
 
-It's **eager load aware**. This means that it will cache an eager loaded relation automatically, but [you may also disable this](#eager-loaded-queries).
+It's **eager load aware**. This means that it will cache an eager loaded relation automatically (but [you may also disable this](#eager-loaded-queries)).
 
 ```php
 use App\Models\User;

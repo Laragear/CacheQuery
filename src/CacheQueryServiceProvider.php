@@ -24,8 +24,8 @@ use function sort;
  */
 class CacheQueryServiceProvider extends ServiceProvider
 {
-    public const CONFIG = __DIR__.'/../config/cache-query.php';
-    public const STUBS = __DIR__.'/../.stubs/stubs';
+    public const string CONFIG = __DIR__.'/../config/cache-query.php';
+    public const string STUBS = __DIR__.'/../.stubs/stubs';
 
     /**
      * Register the service provider.
@@ -95,7 +95,6 @@ class CacheQueryServiceProvider extends ServiceProvider
                 default => $cache = $ttl
             };
 
-            // Normalize the TTL argument to a Cache instance.
             $this->connection = Proxy::crateNewInstance($this->connection, $cache);
 
             return $this;

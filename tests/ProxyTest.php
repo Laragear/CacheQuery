@@ -370,7 +370,7 @@ class ProxyTest extends TestCase
         $interval = $now->diffAsCarbonInterval(now());
 
         $repository = $this->mock(Repository::class);
-        $repository->expects('getMultiple')->with([$hash, ''])->times(4)->andReturn(['' => null, $hash => null]);
+        $repository->expects('getMultiple')->with([$hash])->times(4)->andReturn(['' => null, $hash => null]);
         $repository->allows('getStore')->never();
         $repository->expects('put')->with($hash, Mockery::type('array'), null);
         $repository->expects('put')->with($hash, Mockery::type('array'), $seconds);
@@ -560,7 +560,7 @@ class ProxyTest extends TestCase
         $repository = $this->mock(Repository::class);
         $repository->expects('flexible')->never();
         $repository->expects('put')->with($hash, Mockery::type('array'), 60)->once();
-        $repository->expects('getMultiple')->with([$hash, ''])->times(1)->andReturn(['' => null, $hash => null]);
+        $repository->expects('getMultiple')->with([$hash])->times(1)->andReturn(['' => null, $hash => null]);
 
         $this->mock('cache')->expects('store')->with('test-store')->andReturn($repository);
 
@@ -630,7 +630,7 @@ class ProxyTest extends TestCase
         $repository = $this->mock(Repository::class);
         $repository->expects('flexible')->never();
         $repository->expects('put')->with($hash, Mockery::type('array'), [5, 300])->once();
-        $repository->expects('getMultiple')->with([$hash, ''])->times(1)->andReturn(['' => null, $hash => null]);
+        $repository->expects('getMultiple')->with([$hash])->times(1)->andReturn(['' => null, $hash => null]);
 
         $this->mock('cache')->expects('store')->with(null)->andReturn($repository);
 
@@ -921,7 +921,7 @@ class ProxyTest extends TestCase
         $repository = $this->mock(Repository::class);
         $repository->expects('flexible')->never();
         $repository->expects('put')->with($hash, Mockery::type('array'), [5, 300])->once();
-        $repository->expects('getMultiple')->with([$hash, ''])->times(1)->andReturn(['' => null, $hash => null]);
+        $repository->expects('getMultiple')->with([$hash])->times(1)->andReturn(['' => null, $hash => null]);
 
         $this->mock('cache')->expects('store')->with(null)->andReturn($repository);
 
