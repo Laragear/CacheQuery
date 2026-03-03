@@ -11,6 +11,7 @@ use Illuminate\Database\ConnectionInterface;
 use Illuminate\Support\Str;
 
 use function app;
+use function array_filter;
 use function array_shift;
 use function is_array;
 use function max;
@@ -159,7 +160,11 @@ class Proxy extends Connection
             return [$key => null, $this->cache->key => null];
         }
 
-        return $this->repository->getMultiple([$key, $this->cache->key]);
+        $result = $this->repository->getMultiple(array_filter([$key, $this->cache->key]));
+
+        $result[$this->cache->key] ??= null;
+
+        return $result;
     }
 
     /**

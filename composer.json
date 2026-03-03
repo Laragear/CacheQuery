@@ -26,7 +26,7 @@
         "illuminate/contracts": "11.*|12.*"
     },
     "require-dev": {
-        "orchestra/testbench": "9.*|10.*"
+        "orchestra/testbench": "^9.16|10.*"
     },
     "autoload": {
         "psr-4": {
